@@ -31,7 +31,7 @@ class DbMessage extends \yii\db\ActiveRecord
 	 */
 	public static function tableName()
 	{
-		return '{{%messages}}';
+		return '{{%nfy_messages}}';
 	}
 
 	/**
@@ -107,48 +107,62 @@ class DbMessage extends \yii\db\ActiveRecord
 		$this->isNewRecord = true;
 	}
 
-	public function scopes()
+	/**
+	 * @param ActiveQuery $query
+	 */
+	public static function deleted($query)
 	{
-        $t = $this->getTableAlias(true);
-		return [
-			'deleted' => ['condition'=>"$t.status=".Message::DELETED],
-		];
+		$modelClass = $query->modelClass;
+		$query->andWhere($modelClass::tableName().'.status = '.Message::DELETED);
 	}
 
-	public function available($timeout=null)
+	/**
+	 * @param ActiveQuery $query
+	 * @param integer $timeout
+	 */
+	public static function available($query, $timeout=null)
 	{
-		return $this->withStatus(Message::AVAILABLE,$timeout);
+		self::withStatus($query, Message::AVAILABLE, $timeout);
 	}
 
-	public function reserved($timeout=null)
+	/**
+	 * @param ActiveQuery $query
+	 * @param integer $timeout
+	 */
+	public static function reserved($query, $timeout=null)
 	{
-		return $this->withStatus(Message::RESERVED,$timeout);
+		self::withStatus($query, Message::RESERVED, $timeout);
 	}
 
-	public function timedout($timeout=null)
+	/**
+	 * @param ActiveQuery $query
+	 * @param integer $timeout
+	 */
+	public static function timedout($query, $timeout=null)
 	{
 		if ($timeout === null) {
-			$this->getDbCriteria()->mergeWith(['condition'=>'1=0']);
-			return $this;
+			$query->andWhere('1=0');
+			return;
 		}
 		$now = new DateTime("-$timeout seconds", new DateTimezone('UTC'));
-        $t = $this->getTableAlias(true);
-		$criteria = [
-			'condition' => "($t.status=".Message::RESERVED." AND $t.reserved_on <= :timeout)",
-			'params' => [':timeout'=>$now->format('Y-m-d H:i:s')],
-		];
-        $this->getDbCriteria()->mergeWith($criteria);
-        return $this;
+		$modelClass = $query->modelClass;
+        $t = $modelClass::tableName();
+		$query->andWhere("($t.status=".Message::RESERVED." AND $t.reserved_on <= :timeout)", [':timeout'=>$now->format('Y-m-d H:i:s')]);
 	}
 
-	public function withStatus($statuses, $timeout=null)
+	/**
+	 * @param ActiveQuery $query
+	 * @param array|string $statuses
+	 * @param integer $timeout
+	 */
+	public static function withStatus($query, $statuses, $timeout=null)
 	{
 		if (!is_array($statuses))
 			$statuses = [$statuses];
-        $t = $this->getTableAlias(true);
+		$modelClass = $query->modelClass;
+        $t = $modelClass::tableName();
 		$now = new DateTime("-$timeout seconds", new DateTimezone('UTC'));
-		$criteria = new CDbCriteria;
-		$conditions = [];
+		$conditions = ['or'];
 		// test for two special cases
 		if (array_diff($statuses, [Message::AVAILABLE, Message::RESERVED]) === []) {
 			// only not deleted
@@ -163,13 +177,13 @@ class DbMessage extends \yii\db\ActiveRecord
 						$conditions[] = "$t.status=".$status;
 						if ($timeout !== null) {
 							$conditions[] = "($t.status=".Message::RESERVED." AND $t.reserved_on <= :timeout)";
-							$criteria->params = [':timeout'=>$now->format('Y-m-d H:i:s')];
+							$query->addParams([':timeout'=>$now->format('Y-m-d H:i:s')]);
 						}
 						break;
 					case Message::RESERVED:
 						if ($timeout !== null) {
 							$conditions[] = "($t.status=$status AND $t.reserved_on > :timeout)";
-							$criteria->params = [':timeout'=>$now->format('Y-m-d H:i:s')];
+							$query->addParams([':timeout'=>$now->format('Y-m-d H:i:s')]);
 						} else {
 							$conditions[] = "$t.status=".$status;
 						}
@@ -180,42 +194,38 @@ class DbMessage extends \yii\db\ActiveRecord
 				}
 			}
 		}
-		if (!empty($conditions)) {
-			$criteria->addCondition('('.implode(') OR (', $conditions).')', 'OR');
-			$this->getDbCriteria()->mergeWith($criteria);
+		if ($conditions !== ['or']) {
+			$query->where($conditions);
 		}
-        return $this;
 	}
 
-	public function withQueue($queue_id)
+	/**
+	 * @param ActiveQuery $query
+	 * @param string $queue_id
+	 */
+	public static function withQueue($query, $queue_id)
 	{
-        $t = $this->getTableAlias(true);
-		$pk = $this->tableSchema->primaryKey;
-        $this->getDbCriteria()->mergeWith([
-            'condition' => $t.'.queue_id=:queue_id',
-			'params' => [':queue_id'=>$queue_id],
-			'order' => "$t.$pk ASC",
-        ]);
-        return $this;
+		$modelClass = $query->modelClass;
+        $t = $modelClass::tableName();
+		$pk = $modelClass::primaryKey();
+		$query->andWhere($t.'.queue_id=:queue_id', [':queue_id'=>$queue_id]);
+		$query->order = "$t.$pk ASC";
 	}
 
-	public function withSubscriber($subscriber_id=null)
+	/**
+	 * @param ActiveQuery $query
+	 * @param string $subscriber_id
+	 */
+	public static function withSubscriber($query, $subscriber_id=null)
 	{
 		if ($subscriber_id === null) {
-			$t = $this->getTableAlias(true);
-			$criteria = ['condition'=>"$t.subscription_id IS NULL"];
+			$modelClass = $query->modelClass;
+			$t = $modelClass::tableName();
+			$query->andWhere("$t.subscription_id IS NULL");
 		} else {
-			$schema = $this->getDbConnection()->getSchema();
-			$criteria = [
-				'together' => true,
-				'with' => ['subscription' => [
-					'condition' => $schema->quoteSimpleTableName('subscription').'.subscriber_id=:subscriber_id',
-					'params' => [':subscriber_id'=>$subscriber_id],
-				]],
-			];
+			$query->innerJoinWith('subscription');
+			$query->andWhere(DbSubscription::tableName().'.subscriber_id=:subscriber_id', [':subscriber_id'=>$subscriber_id]);
 		}
-        $this->getDbCriteria()->mergeWith($criteria);
-        return $this;
 	}
 
 	public static function createMessages($dbMessages)

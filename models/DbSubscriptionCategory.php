@@ -20,7 +20,7 @@ class DbSubscriptionCategory extends \yii\db\ActiveRecord
 	 */
 	public static function tableName()
 	{
-		return '{{%subscription_categories}}';
+		return '{{%nfy_subscription_categories}}';
 	}
 
 	/**

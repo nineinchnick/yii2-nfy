@@ -23,10 +23,10 @@ $this->breadcrumbs=array(
 <div>
 <?php if ((int)$message->status === NfyMessage::AVAILABLE): ?>
 	<form method="post" action="<?php echo $this->createMessageUrl($queue_name, $message); ?>">
-		<?php echo CHtml::submitButton(Yii::t('app', 'Mark as read'), array('name'=>'delete')); ?>
+		<?php echo Html::submitButton(Yii::t('app', 'Mark as read'), array('name'=>'delete')); ?>
 	</form>
 <?php endif; ?>
-    <?php echo CHtml::link(CHtml::encode(Yii::t('app', 'Back to messages list')), array('messages', 'queue_name'=>$queue_name, 'subscriber_id'=>$message->subscriber_id)); ?>
+    <?php echo Html::link(Html::encode(Yii::t('app', 'Back to messages list')), array('messages', 'queue_name'=>$queue_name, 'subscriber_id'=>$message->subscriber_id)); ?>
 </div>
 
 <?php if ($queue instanceof NfyDbQueue): ?>

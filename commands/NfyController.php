@@ -1,8 +1,12 @@
 <?php
 
-namespace nineinchnick\nfy;
+namespace nineinchnick\nfy\commands;
 
-class Nfy extends ConsoleCommand
+use Yii;
+use yii\console\Controller;
+use yii\rbac;
+
+class NfyController extends Controller
 {
     /**
      * nfy.queue.read
@@ -49,20 +53,20 @@ class Nfy extends ConsoleCommand
 
     public function actionCreateAuthItems()
     {
-		$auth = Yii::app()->authManager;
+		$auth = Yii::$app->authManager;
 
         $newAuthItems = array();
         $descriptions = $this->getTemplateAuthItemDescriptions();
         foreach($this->getTemplateAuthItems() as $template) {
             $newAuthItems[$template['name']] = $template;
         }
-		$existingAuthItems = $auth->getAuthItems(CAuthItem::TYPE_OPERATION);
+		$existingAuthItems = $auth->getItems(rbac\Item::TYPE_OPERATION);
         foreach($existingAuthItems as $name=>$existingAuthItem) {
             if (isset($newAuthItems[$name]))
                 unset($newAuthItems[$name]);
         }
         foreach($newAuthItems as $template) {
-            $auth->createAuthItem($template['name'], CAuthItem::TYPE_OPERATION, $descriptions[$template['name']], $template['bizRule']);
+            $auth->createItem($template['name'], rbac\Item::TYPE_OPERATION, $descriptions[$template['name']], $template['bizRule']);
             if (isset($template['child']) && $template['child'] !== null) {
                 $auth->addItemChild($template['name'], $template['child']);
             }
@@ -71,10 +75,10 @@ class Nfy extends ConsoleCommand
 
     public function actionRemoveAuthItems()
     {
-		$auth = Yii::app()->authManager;
+		$auth = Yii::$app->authManager;
 
         foreach($this->getTemplateAuthItems() as $template) {
-            $auth->removeAuthItem($template['name']);
+            $auth->removeItem($template['name']);
         }
     }
 
@@ -84,7 +88,7 @@ class Nfy extends ConsoleCommand
 	 */
 	public function actionSend($queue, $message)
 	{
-		$q = Yii::app()->getComponent($queue);
+		$q = Yii::$app->getComponent($queue);
 		if ($q === null) {
 			throw new CException('Queue not found.');
 		}
@@ -96,7 +100,7 @@ class Nfy extends ConsoleCommand
 	 */
 	public function actionReceive($queue, $limit=-1)
 	{
-		$q = Yii::app()->getComponent($queue);
+		$q = Yii::$app->getComponent($queue);
 		if ($q === null) {
 			throw new CException('Queue not found.');
 		}
@@ -108,7 +112,7 @@ class Nfy extends ConsoleCommand
 	 */
 	public function actionPeek($queue, $limit=-1)
 	{
-		$q = Yii::app()->getComponent($queue);
+		$q = Yii::$app->getComponent($queue);
 		if ($q === null) {
 			throw new CException('Queue not found.');
 		}

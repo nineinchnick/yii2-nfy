@@ -24,7 +24,7 @@ class DbSubscription extends \yii\db\ActiveRecord
 	 */
 	public static function tableName()
 	{
-		return '{{%subscriptions}}';
+		return '{{%nfy_subscriptions}}';
 	}
 
 	/**
@@ -83,59 +83,56 @@ class DbSubscription extends \yii\db\ActiveRecord
 		return parent::beforeSave($insert);
 	}
 
-	public function scopes()
+	/**
+	 * @param ActiveQuery $query
+	 */
+	public static function current($query)
 	{
-        $t = $this->getTableAlias(true);
-		return [
-			'current' => ['condition' => "$t.is_deleted = 0"],
-		];
+		$modelClass = $query->modelClass;
+		$query->andWhere($modelClass::tableName().'.is_deleted = 0');
 	}
 
-	public function withQueue($queue_id)
+	/**
+	 * @param ActiveQuery $query
+	 * @param string $queue_id
+	 */
+	public static function withQueue($query, $queue_id)
 	{
-        $t = $this->getTableAlias(true);
-        $this->getDbCriteria()->mergeWith([
-            'condition' => $t.'.queue_id=:queue_id',
-			'params' => [':queue_id'=>$queue_id],
-        ]);
-        return $this;
+		$modelClass = $query->modelClass;
+        $query->andWhere($modelClass::tableName().'.queue_id=:queue_id', [':queue_id'=>$queue_id]);
 	}
 
-	public function withSubscriber($subscriber_id)
+	/**
+	 * @param ActiveQuery $query
+	 * @param string $subscriber_id
+	 */
+	public static function withSubscriber($query, $subscriber_id)
 	{
-        $t = $this->getTableAlias(true);
-        $this->getDbCriteria()->mergeWith([
-            'condition' => $t.'.subscriber_id=:subscriber_id',
-			'params' => [':subscriber_id'=>$subscriber_id],
-        ]);
-        return $this;
+		$modelClass = $query->modelClass;
+        $query->andWhere($modelClass::tableName().'.subscriber_id=:subscriber_id', [':subscriber_id'=>$subscriber_id]);
 	}
 
-	public function matchingCategory($categories)
+	/**
+	 * @param ActiveQuery $query
+	 * @param array|string $categories
+	 */
+	public static function matchingCategory($query, $categories)
 	{
         if ($categories===null)
             return $this;
-        $t = $this->getTableAlias(true);
-		$r = $this->dbConnection->schema->quoteTableName('categories');
+		$modelClass = $query->modelClass;
+        $t = $modelClass::tableName();
+		$r = DbSubscriptionCategory::tableName();
 
         if (!is_array($categories))
             $categories = [$categories];
 
-        $criteria = new CDbCriteria;
-		$criteria->with = ['categories'=>[
-			'together'=>true,
-			'select'=>null,
-			'distinct'=>true,
-		]];
+		$query->innerJoinWith('categories');
 
         $i = 0;
         foreach($categories as $category) {
-			$criteria->addCondition("($r.is_exception = 0 AND :category$i LIKE $r.category) OR ($r.is_exception = 1 AND :category$i NOT LIKE $r.category)");
-			$criteria->params[':category'.$i++] = $category;
+			$query->andWhere("($r.is_exception = 0 AND :category$i LIKE $r.category) OR ($r.is_exception = 1 AND :category$i NOT LIKE $r.category)", [':category'.$i++ => $category]);
         }
-        
-        $this->getDbCriteria()->mergeWith($criteria);
-        return $this;
 	}
 
 	public static function createSubscriptions($dbSubscriptions)

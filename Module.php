@@ -13,7 +13,7 @@ class Module extends \yii\base\Module
 	/**
 	 * @var string Name of user model class.
 	 */
-	public $userClass = 'User';
+	public $userClass = 'app\models\User';
 	/**
 	 * @var string if not null a sound will be played along with displaying a notification
 	 */
@@ -49,5 +49,13 @@ class Module extends \yii\base\Module
 			'sourceLanguage' => 'en-US',
 			'basePath' => '@nfy/messages',
 		];
+		\Yii::$app->i18n->translations['auth'] = [
+			'class' => 'yii\i18n\PhpMessageSource',
+			'sourceLanguage' => 'en-US',
+			'basePath' => '@nfy/messages',
+		];
+		if (\Yii::$app instanceof yii\console\Application) {
+			$this->controllerMap['nfy'] = 'nineinchnick\nfy\commands\NfyController';
+		}
 	}
 }
