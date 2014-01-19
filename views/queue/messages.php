@@ -7,7 +7,7 @@
 /* @var $authItems array */
 
 $this->breadcrumbs=array(
-	Yii::t('NfyModule.app', 'Queues')=>array('index'),
+	Yii::t('app', 'Queues')=>array('index'),
 	$queue->label,
 );
 ?>
@@ -22,8 +22,8 @@ $this->breadcrumbs=array(
 	'template' => "{summary}\n{pager}\n{items}",
     'pager' => array(
         'class' => 'CLinkPager',
-        'prevPageLabel' => Yii::t('NfyModule.app', 'Newer'),
-        'nextPageLabel' => Yii::t('NfyModule.app', 'Older'),
+        'prevPageLabel' => Yii::t('app', 'Newer'),
+        'nextPageLabel' => Yii::t('app', 'Older'),
     ),
 )); ?>
 </p>

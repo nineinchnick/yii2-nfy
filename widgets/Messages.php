@@ -1,13 +1,16 @@
 <?php
 
-class MessagesWidget extends CWidget
+namespace nineinchnick\nfy\widgets;
+
+use Yii;
+use yii\base\Widget;
+
+class Messages extends Widget
 {
 	/**
 	 * @var array Keys must be queue component names and values must be arrays of NfyMessage objects.
 	 */
-    public $messages = array();
-
-	public $whiteIcons = false;
+    public $messages = [];
 
 	protected function countMessages()
 	{
@@ -21,13 +24,12 @@ class MessagesWidget extends CWidget
 	public function createMenuItem()
 	{
 		$count = $this->countMessages();
-		return array(
+		return [
 			'url' => '/nfy/queue',
-			'label' => ($count > 0 ? ('<span class="label label-warning">' . $count . '</span>') : ''),
-			'visible' => !Yii::app()->user->isGuest,
-			'icon' => ($this->whiteIcons ? 'white ' : '').'comment',
+			'label' => '<i class="glyphicon glyphicon-comment"></i> '.($count > 0 ? ('<span class="label label-warning">' . $count . '</span>') : ''),
+			//'visible' => !Yii::$app->user->isGuest,
 			'id' => $this->getId(),
-		);
+		];
 	}
 
 	public function run()
@@ -37,11 +39,10 @@ class MessagesWidget extends CWidget
 		$cnt = 0;
 		$extraCss = '';
 
-		Yii::import('nfy.controllers.QueueController');
-		if ($this->owner instanceof QueueController) {
-			$queueController = $this->owner;
+		if ($this->view->context instanceof nineinchnick\nfy\controllers\QueueController) {
+			$queueController = $this->view->context;
 		} else {
-			$queueController = new QueueController('queue', Yii::app()->getModule('nfy'));
+			$queueController = new \nineinchnick\nfy\controllers\QueueController('queue', Yii::$app->getModule('nfy'));
 		}
 		
 		foreach($this->messages as $queueName => $messages) {
@@ -54,9 +55,9 @@ class MessagesWidget extends CWidget
 			}
 		}
 		
-		$label = Yii::t('NfyModule.app', 'Mark all as read');
+		$label = Yii::t('app', 'Mark all as read');
 		//! @todo fix this
-		$deleteUrl = $this->owner->createUrl('/nfy/message/mark');
+		$deleteUrl = $this->view->context->createUrl('/nfy/message/mark');
 		$widgetId = $this->getId();
 		
 		$js = <<<JavaScript
@@ -154,7 +155,7 @@ div.messagePopoverMarkAll a {
     text-align: left;
 }
 CSS;
-		Yii::app()->clientScript->registerCss(__CLASS__.'#popup', $css);
-		Yii::app()->clientScript->registerScript(__CLASS__.'#popup', $js, CClientScript::POS_READY);
+		$this->view->registerCss($css);
+		$this->view->registerJs($js);
     }
 }

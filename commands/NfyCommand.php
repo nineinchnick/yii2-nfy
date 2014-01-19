@@ -1,8 +1,8 @@
 <?php
 
-Yii::import('nfy.NfyModule');
+namespace nineinchnick\nfy;
 
-class NfyCommand extends CConsoleCommand
+class Nfy extends ConsoleCommand
 {
     /**
      * nfy.queue.read
@@ -36,14 +36,14 @@ class NfyCommand extends CConsoleCommand
     public function getTemplateAuthItemDescriptions()
     {
         return array(
-            'nfy.queue.read'              => Yii::t('NfyModule.auth', 'Read any queue'),
-            'nfy.queue.read.subscribed'   => Yii::t('NfyModule.auth', 'Read subscribed queue'),
-            'nfy.queue.subscribe'         => Yii::t('NfyModule.auth', 'Subscribe to any queue'),
-            'nfy.queue.unsubscribe'       => Yii::t('NfyModule.auth', 'Unsubscribe from a queue'),
-            'nfy.message.read'              => Yii::t('NfyModule.auth', 'Read messages from any queue'),
-            'nfy.message.create'            => Yii::t('NfyModule.auth', 'Send messages to any queue'),
-            'nfy.message.read.subscribed'   => Yii::t('NfyModule.auth', 'Read messages from subscribed queue'),
-            'nfy.message.create.subscribed' => Yii::t('NfyModule.auth', 'Send messages to subscribed queue'),
+            'nfy.queue.read'              => Yii::t('auth', 'Read any queue'),
+            'nfy.queue.read.subscribed'   => Yii::t('auth', 'Read subscribed queue'),
+            'nfy.queue.subscribe'         => Yii::t('auth', 'Subscribe to any queue'),
+            'nfy.queue.unsubscribe'       => Yii::t('auth', 'Unsubscribe from a queue'),
+            'nfy.message.read'              => Yii::t('auth', 'Read messages from any queue'),
+            'nfy.message.create'            => Yii::t('auth', 'Send messages to any queue'),
+            'nfy.message.read.subscribed'   => Yii::t('auth', 'Read messages from subscribed queue'),
+            'nfy.message.create.subscribed' => Yii::t('auth', 'Send messages to subscribed queue'),
         );
     }
 

@@ -5,7 +5,7 @@
 /* @var $form CActiveForm */
 
 $this->breadcrumbs=array(
-	Yii::t('NfyModule.app', 'Queues')=>array('index'),
+	Yii::t('app', 'Queues')=>array('index'),
 	$queue->label,
 );
 ?>
@@ -36,7 +36,7 @@ $this->breadcrumbs=array(
     <br/>
     
 	<div class="row buttons">
-		<?php echo CHtml::submitButton(Yii::t('NfyModule.app', 'Submit')); ?>
+		<?php echo CHtml::submitButton(Yii::t('app', 'Submit')); ?>
 	</div>
 
 <?php $this->endWidget(); ?>

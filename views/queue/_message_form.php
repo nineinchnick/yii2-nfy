@@ -23,7 +23,7 @@
     <br/>
     
 	<div class="buttons">
-		<?php echo CHtml::submitButton(Yii::t('NfyModule.app', 'Submit')); ?>
+		<?php echo CHtml::submitButton(Yii::t('app', 'Submit')); ?>
 	</div>
 
 <?php $this->endWidget(); ?>

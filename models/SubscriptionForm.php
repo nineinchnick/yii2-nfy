@@ -32,9 +32,9 @@ class SubscriptionForm extends CFormModel
 	public function attributeLabels()
 	{
 		return array(
-			'label' => Yii::t('NfyModule.app', 'Label'),
-			'categories' => Yii::t('NfyModule.app', 'Categories'),
-			'exceptions' => Yii::t('NfyModule.app', 'Exceptions'),
+			'label' => Yii::t('app', 'Label'),
+			'categories' => Yii::t('app', 'Categories'),
+			'exceptions' => Yii::t('app', 'Exceptions'),
 		);
 	}
 }

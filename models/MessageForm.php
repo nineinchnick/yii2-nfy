@@ -20,8 +20,8 @@ class MessageForm extends CFormModel
 	public function attributeLabels()
 	{
 		return array(
-			'content' => Yii::t('NfyModule.app', 'Message content'),
-			'category' => Yii::t('NfyModule.app', 'Message category'),
+			'content' => Yii::t('app', 'Message content'),
+			'category' => Yii::t('app', 'Message category'),
 		);
 	}
 }

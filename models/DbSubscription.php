@@ -1,6 +1,6 @@
 <?php
 
-namespace nineinchnick\usr\models;
+namespace nineinchnick\nfy\models;
 
 /**
  * This is the model class for table "{{nfy_subscriptions}}".
@@ -22,7 +22,7 @@ class DbSubscription extends \yii\db\ActiveRecord
 	/**
 	 * @inheritdoc
 	 */
-	public function tableName()
+	public static function tableName()
 	{
 		return '{{%subscriptions}}';
 	}
