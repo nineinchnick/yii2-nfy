@@ -2,6 +2,8 @@
 
 namespace nineinchnick\nfy\models;
 
+use nineinchnick\nfy\components\Message;
+
 /**
  * This is the model class for table "{{nfy_messages}}".
  *
@@ -63,7 +65,7 @@ class DbMessage extends \yii\db\ActiveRecord
 		return $this->hasOne(DbSubscription::className(), ['subscription_id' => 'id']);
 	}
 
-	public function getSubscription()
+	public function getMessages()
 	{
 		return $this->hasMany(DbMessage::className(), ['id' => 'message_id']);
 	}
@@ -94,7 +96,7 @@ class DbMessage extends \yii\db\ActiveRecord
 	 */
 	public function beforeSave($insert) {
 		if ($insert && $this->created_on === null) {
-			$now = new DateTime('now', new DateTimezone('UTC'));
+			$now = new \DateTime('now', new \DateTimezone('UTC'));
 			$this->created_on = $now->format('Y-m-d H:i:s');
 		}
 		return parent::beforeSave($insert);
@@ -144,7 +146,7 @@ class DbMessage extends \yii\db\ActiveRecord
 			$query->andWhere('1=0');
 			return;
 		}
-		$now = new DateTime("-$timeout seconds", new DateTimezone('UTC'));
+		$now = new \DateTime($timeout === null ? '' : "-$timeout seconds", new \DateTimezone('UTC'));
 		$modelClass = $query->modelClass;
         $t = $modelClass::tableName();
 		$query->andWhere("($t.status=".Message::RESERVED." AND $t.reserved_on <= :timeout)", [':timeout'=>$now->format('Y-m-d H:i:s')]);
@@ -161,7 +163,7 @@ class DbMessage extends \yii\db\ActiveRecord
 			$statuses = [$statuses];
 		$modelClass = $query->modelClass;
         $t = $modelClass::tableName();
-		$now = new DateTime("-$timeout seconds", new DateTimezone('UTC'));
+		$now = new \DateTime($timeout === null ? '' : "-$timeout seconds", new \DateTimezone('UTC'));
 		$conditions = ['or'];
 		// test for two special cases
 		if (array_diff($statuses, [Message::AVAILABLE, Message::RESERVED]) === []) {
@@ -209,7 +211,7 @@ class DbMessage extends \yii\db\ActiveRecord
         $t = $modelClass::tableName();
 		$pk = $modelClass::primaryKey();
 		$query->andWhere($t.'.queue_id=:queue_id', [':queue_id'=>$queue_id]);
-		$query->order = "$t.$pk ASC";
+		$query->orderBy = ["$t.{$pk[0]}"=>'ASC'];
 	}
 
 	/**

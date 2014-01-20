@@ -1,27 +1,32 @@
 <?php
 
+namespace nineinchnick\nfy\models;
+
+use Yii;
+use yii\base\Model;
+
 /**
- *
+ * MessageForm is the model behind the message form.
  */
-class MessageForm extends CFormModel
+class MessageForm extends Model
 {
     public $content;
     public $category;
     
 	public function rules()
 	{
-        return array(
-            array('content, category', 'filter', 'filter'=>'trim'),
-            array('content, category', 'default', 'setOnEmpty'=>true, 'value' => null),
-            array('content', 'required'),
-        );
+        return [
+            [['content', 'category'], 'filter', 'filter'=>'trim'],
+            [['content', 'category'], 'default', 'setOnEmpty'=>true, 'value' => null],
+            ['content', 'required'],
+        ];
     }
 
 	public function attributeLabels()
 	{
-		return array(
+		return [
 			'content' => Yii::t('app', 'Message content'),
 			'category' => Yii::t('app', 'Message category'),
-		);
+		];
 	}
 }

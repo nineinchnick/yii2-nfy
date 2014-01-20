@@ -1,9 +1,14 @@
 <?php
 
+namespace nineinchnick\nfy\models;
+
+use Yii;
+use yii\base\Model;
+
 /**
- *
+ * SubscriptionForm is the model behind the message form.
  */
-class SubscriptionForm extends CFormModel
+class SubscriptionForm extends Model
 {
     public $label;
     public $categories;
@@ -11,11 +16,11 @@ class SubscriptionForm extends CFormModel
     
 	public function rules()
 	{
-        return array(
-            array('label, categories, exceptions', 'filter', 'filter'=>'trim'),
-            array('label, categories, exceptions', 'default', 'setOnEmpty'=>true, 'value' => null),
-            array('categories, exceptions', 'prepare'),
-        );
+        return [
+            [['label', 'categories', 'exceptions'], 'filter', 'filter'=>'trim'],
+            [['label', 'categories', 'exceptions'], 'default', 'setOnEmpty'=>true, 'value' => null],
+            [['categories', 'exceptions'], 'prepare'],
+        ];
     }
 
 	public function prepare($attribute, $params)
@@ -31,10 +36,10 @@ class SubscriptionForm extends CFormModel
 
 	public function attributeLabels()
 	{
-		return array(
+		return [
 			'label' => Yii::t('app', 'Label'),
 			'categories' => Yii::t('app', 'Categories'),
 			'exceptions' => Yii::t('app', 'Exceptions'),
-		);
+		];
 	}
 }

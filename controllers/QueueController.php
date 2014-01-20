@@ -5,6 +5,7 @@ namespace nineinchnick\nfy\controllers;
 use Yii;
 use yii\web\BadRequestHttpException;
 use yii\web\AccessDeniedHttpException;
+use yii\web\NotFoundHttpException;
 use nineinchnick\nfy\components;
 use nineinchnick\nfy\models;
 
@@ -89,7 +90,8 @@ class QueueController extends \yii\web\Controller
         list($queue, $authItems) = $this->loadQueue($queue_name, ['nfy.message.read', 'nfy.message.create']);
 		$this->verifySubscriber($queue, $subscriber_id);
 
-		$formModel = new MessageForm('create');
+		$formModel = new models\MessageForm;
+		$formModel->scenario = 'create';
         if ($authItems['nfy.message.create'] && isset($_POST['MessageForm'])) {
 			$formModel->attributes=$_POST['MessageForm'];
 			if($formModel->validate()) {
@@ -100,12 +102,12 @@ class QueueController extends \yii\web\Controller
 
         $dataProvider = null;
         if ($authItems['nfy.message.read']) {
-			$dataProvider = new CArrayDataProvider(
-				$queue->peek($subscriber_id, 200, [components\Message::AVAILABLE, components\Message::RESERVED, components\Message::DELETED]),
-				['sort'=>['attributes'=>['id'], 'defaultOrder' => ['id' => CSort::SORT_DESC]]]
-			);
+			$dataProvider = new \yii\data\ArrayDataProvider([
+				'allModels' => $queue->peek($subscriber_id, 200, [components\Message::AVAILABLE, components\Message::RESERVED, components\Message::DELETED]),
+				'sort'=>['attributes'=>['id'], 'defaultOrder' => ['id' => SORT_DESC]],
+			]);
             // reverse display order to simulate a chat window, where latest message is right above the message form
-            $dataProvider->setData(array_reverse($dataProvider->getData()));
+            $dataProvider->setModels(array_reverse($dataProvider->getModels()));
         }
 		return $this->render('messages', [
 			'queue' => $queue,
@@ -136,7 +138,7 @@ class QueueController extends \yii\web\Controller
 
 			$dbMessage = models\DbMessage::model()->findByPk($message_id);
 			if ($dbMessage === null)
-				throw new CHttpException(404, Yii::t("app", 'Message with given ID was not found.'));
+				throw new NotFoundHttpException(Yii::t("app", 'Message with given ID was not found.'));
 			$messages = models\DbMessage::createMessages($dbMessage);
 			$message = reset($messages);
 		} else {
@@ -168,7 +170,7 @@ class QueueController extends \yii\web\Controller
 	 * @param string $name queue component name
 	 * @param array $authItems
 	 * @return array QueueInterface object and array with authItems as keys and boolean values
-	 * @throws CHttpException 403 or 404
+	 * @throws AccessDeniedHttpException,NotFoundHttpException
 	 */
     protected function loadQueue($name, $authItems=[])
     {
@@ -177,7 +179,7 @@ class QueueController extends \yii\web\Controller
 		/** @var Queue */
 		$queue = Yii::$app->getComponent($name);
 		if (!($queue instanceof components\QueueInterface))
-            throw new CHttpException(404, Yii::t("app", 'Queue with given ID was not found.'));
+            throw new NotFoundHttpException(Yii::t("app", 'Queue with given ID was not found.'));
         $assignedAuthItems = [];
         $allowAccess = empty($authItems);
         foreach($authItems as $authItem) {
@@ -186,7 +188,7 @@ class QueueController extends \yii\web\Controller
                 $allowAccess = true;
         }
         if (!$allowAccess) {
-            throw new CHttpException(403, Yii::t('yii','You are not authorized to perform this action.'));
+            throw new AccessDeniedHttpException(Yii::t('yii','You are not authorized to perform this action.'));
         }
         return [$queue, $assignedAuthItems];
     }
@@ -195,7 +197,7 @@ class QueueController extends \yii\web\Controller
 	 * Checks if current user can read only messages from subscribed queues and is subscribed.
 	 * @param QueueInterface $queue
 	 * @param integer $subscriber_id
-	 * @throws CHttpException 403
+	 * @throws AccessDeniedHttpException
 	 */
 	protected function verifySubscriber($queue, $subscriber_id)
 	{
@@ -203,13 +205,13 @@ class QueueController extends \yii\web\Controller
 		$user = Yii::$app->user;
         $subscribedOnly = $user->checkAccess('nfy.message.read.subscribed', [], true, false);
 		if ($subscribedOnly && (!$queue->isSubscribed($user->getId()) || $subscriber_id != $user->getId()))
-            throw new CHttpException(403, Yii::t('yii','You are not authorized to perform this action.'));
+            throw new AccessDeniedHttpException(Yii::t('yii','You are not authorized to perform this action.'));
 	}
 
 	/**
 	 * @param string $id id of the queue component
 	 * @param boolean $subscribed should the queue be checked using current user's subscription
-	 * @throws CHttpException 403
+	 * @throws AccessDeniedHttpException
 	 */
     public function actionPoll($id, $subscribed=true)
     {
@@ -218,7 +220,7 @@ class QueueController extends \yii\web\Controller
 		if (!($queue instanceof components\QueueInterface))
 			return [];
 		if (!Yii::$app->user->checkAccess('nfy.message.read', ['queue'=>$queue]))
-            throw new CHttpException(403, Yii::t('yii','You are not authorized to perform this action.'));
+            throw new AccessDeniedHttpException(Yii::t('yii','You are not authorized to perform this action.'));
 
 		Yii::$app->session->close();
 

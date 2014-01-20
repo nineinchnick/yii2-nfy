@@ -109,7 +109,7 @@ class DbQueue extends Queue
 	public function peek($subscriber_id=null, $limit=-1, $status=components\Message::AVAILABLE)
 	{
 		$pk = models\DbMessage::primaryKey();
-		$messages = models\DbMessage::find()->withQueue($this->id)->withSubscriber($subscriber_id)->withStatus($status, $this->timeout)->limit($limit)->indexBy($pk)->all();
+		$messages = models\DbMessage::find()->withQueue($this->id)->withSubscriber($subscriber_id)->withStatus($status, $this->timeout)->limit($limit)->indexBy($pk[0])->all();
 		return models\DbMessage::createMessages($messages);
 	}
 
@@ -136,7 +136,7 @@ class DbQueue extends Queue
 	{
 		$pk = models\DbMessage::primaryKey();
 		$trx = models\DbMessage::getDb()->transaction !== null ? null : models\DbMessage::getDb()->beginTransaction();
-		$messages = models\DbMessage::find()->withQueue($this->id)->withSubscriber($subscriber_id)->available($this->timeout)->limit($limit)->indexBy($pk)->all();
+		$messages = models\DbMessage::find()->withQueue($this->id)->withSubscriber($subscriber_id)->available($this->timeout)->limit($limit)->indexBy($pk[0])->all();
 		if (!empty($messages)) {
 			$now = new DateTime('now', new DateTimezone('UTC'));
 			if ($mode === self::GET_DELETE) {

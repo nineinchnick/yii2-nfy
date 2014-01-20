@@ -18,11 +18,11 @@ try {
 }
 ?>
 
-<h3><?= Html::encode($model->label); ?> <small><?= Html::a(Yii::t('app','View all messages'), ['messages', 'queue_name'=>$index])?></small></h3>
+<h3><?= Html::encode($model->label); ?> <small><?= Html::a(Yii::t('app','View all messages'), ['messages', 'queue_name'=>$key])?></small></h3>
 <?php if ($supportSubscriptions): ?>
 <p>
-	<?= Html::a(Yii::t('app', 'Subscribe'), ['subscribe', 'queue_name'=>$index]) ?> /
-	<?= Html::a(Yii::t('app', 'Unsubscribe'), ['unsubscribe', 'queue_name'=>$index]) ?>
+	<?= Html::a(Yii::t('app', 'Subscribe'), ['subscribe', 'queue_name'=>$key]) ?> /
+	<?= Html::a(Yii::t('app', 'Unsubscribe'), ['unsubscribe', 'queue_name'=>$key]) ?>
 </p>
 <?php endif; ?>
 <?php if (!empty($subscriptions)): ?>
@@ -34,7 +34,7 @@ try {
 		<li>
 			<?= Html::a(
 				Html::encode($subscription->label),
-				['messages', 'queue_name'=>$index, 'subscriber_id'=>$subscription->subscriber_id],
+				['messages', 'queue_name'=>$key, 'subscriber_id'=>$subscription->subscriber_id],
 				['title'=>implode("\n",$subscription->categories)]
 			) ?>
 		</li>
