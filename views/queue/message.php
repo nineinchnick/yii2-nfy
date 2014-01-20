@@ -32,11 +32,11 @@ $this->params['breadcrumbs'][] = $message->id;
 </div>
 
 <?php if ($queue instanceof nineinchnick\nfy\components\DbQueue): ?>
-<?php if (!Yii::$app->user->checkAccess('nfy.message.read.subscribed', array(), true, false) && ($otherMessages=$dbMessage->getSubscriptionMessages()->joinWith('subscription.subscriber')->orderBy($dbMessage->getDb()->getSchema()->quoteSimpleTableName('nfy_messages').'.deleted_on, '.$dbMessage->getDb()->getSchema()->quoteSimpleTableName('users').'.username')->all()) != array()): ?>
+<?php if (!Yii::$app->user->checkAccess('nfy.message.read.subscribed', array(), true, false) && ($otherMessages=$dbMessage->getSubscriptionMessages()->joinWith('subscription.subscriber')->orderBy($dbMessage->getDb()->getSchema()->quoteSimpleTableName('nfy_messages').'.deleted_on, '.$dbMessage->getDb()->getSchema()->quoteSimpleTableName('subscriber').'.username')->all()) != array()): ?>
 <h3><?php echo Yii::t('app', 'Other recipients'); ?>:</h3>
 <ul>
 <?php foreach($otherMessages as $otherMessage): ?>
-    <li><?php echo $otherMessage->deleted_on.' '.($otherMessage->subscription !== null ? $otherMessage->subscription->subscriber : ''); ?></li>
+    <li><?php echo $otherMessage->deleted_on.' '.$otherMessage->subscription->subscriber; ?></li>
 <?php endforeach; ?>
 </ul>
 <?php endif; // access granted and not empty ?>

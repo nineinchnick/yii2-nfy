@@ -50,7 +50,8 @@ class DbSubscription extends \yii\db\ActiveRecord
 
 	public function getSubscriber()
 	{
-		return $this->hasOne(Yii::$app->getModule('nfy')->userClass, ['id' => 'subscriber_id']);
+		$userClass = Yii::$app->getModule('nfy')->userClass;
+		return $this->hasOne($userClass, ['id' => 'subscriber_id'])->from($userClass::tableName().' subscriber');
 	}
 
 	public function getCategories()

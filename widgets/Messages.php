@@ -28,7 +28,7 @@ class Messages extends Widget
 			'url' => '/nfy/queue',
 			'label' => '<i class="glyphicon glyphicon-comment"></i> '.($count > 0 ? ('<span class="label label-warning">' . $count . '</span>') : ''),
 			//'visible' => !Yii::$app->user->isGuest,
-			'id' => $this->getId(),
+			'options' => ['id' => $this->getId()],
 		];
 	}
 

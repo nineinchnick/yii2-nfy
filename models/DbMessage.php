@@ -67,7 +67,7 @@ class DbMessage extends \yii\db\ActiveRecord
 
 	public function getSubscriptionMessages()
 	{
-		return $this->hasMany(DbMessage::className(), ['id' => 'message_id']);
+		return $this->hasMany(DbMessage::className(), [self::tableName().'.message_id' => 'id']);
 	}
 
 	/**
@@ -197,7 +197,7 @@ class DbMessage extends \yii\db\ActiveRecord
 			}
 		}
 		if ($conditions !== ['or']) {
-			$query->where($conditions);
+			$query->andWhere($conditions);
 		}
 	}
 
