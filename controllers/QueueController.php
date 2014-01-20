@@ -131,11 +131,11 @@ class QueueController extends \yii\web\Controller
 		$this->verifySubscriber($queue, $subscriber_id);
 
 		if ($queue instanceof components\DbQueue) {
-			models\DbMessage::model()->withQueue($queue->id);
+			$query = models\DbMessage::find()->withQueue($queue->id);
 			if ($subscriber_id !== null)
-				models\DbMessage::model()->withSubscriber($subscriber_id);
+				$query->withSubscriber($subscriber_id);
 
-			$dbMessage = models\DbMessage::model()->findByPk($message_id);
+			$dbMessage = $query->andWhere(['in',models\DbMessage::primaryKey()[0], $message_id])->one();
 			if ($dbMessage === null)
 				throw new NotFoundHttpException(Yii::t("app", 'Message with given ID was not found.'));
 			$messages = models\DbMessage::createMessages($dbMessage);

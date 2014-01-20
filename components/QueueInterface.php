@@ -4,9 +4,22 @@ namespace nineinchnick\nfy\components;
 
 interface QueueInterface
 {
-	const GET_PEEK = 0;
-	const GET_RESERVE = 1;
-	const GET_DELETE = 2;
+	/**
+	 * @event Event an event that is triggered before a message is sent to a queue.
+	 */
+	const EVENT_BEFORE_SEND = 'beforeSend';
+	/**
+	 * @event Event an event that is triggered after a message is sent to a queue.
+	 */
+	const EVENT_AFTER_SEND = 'afterSend';
+	/**
+	 * @event Event an event that is triggered before a message is sent to a subscription.
+	 */
+	const EVENT_BEFORE_SEND_SUBSCRIPTION = 'beforeSendSubscription';
+	/**
+	 * @event Event an event that is triggered after a message is sent to a subscription.
+	 */
+	const EVENT_AFTER_SEND_SUBSCRIPTION = 'afterSendSubscription';
 
 	/**
 	 * Determines if message can be sent.

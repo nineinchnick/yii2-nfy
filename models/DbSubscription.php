@@ -34,7 +34,7 @@ class DbSubscription extends \yii\db\ActiveRecord
 	{
 		return [
 			[['queue_id', 'subscriber_id'], 'required', 'except'=>'search'],
-			['subscriber_id', 'numerical', 'integerOnly'=>true],
+			['subscriber_id', 'number', 'integerOnly'=>true],
 			['is_deleted', 'boolean'],
 			['label', 'safe'],
 		];
@@ -52,7 +52,7 @@ class DbSubscription extends \yii\db\ActiveRecord
 
 	public function getCategories()
 	{
-		return $this->hasMany(DbSubscriptionCategory::className(), ['id' => 'subscription_id']);
+		return $this->hasMany(DbSubscriptionCategory::className(), ['subscription_id' => 'id']);
 	}
 
 	public function getMessagesCount()

@@ -57,7 +57,7 @@ class DbQueue extends Queue
 		$queueMessage = $this->createMessage($message);
 
         if ($this->beforeSend($queueMessage) !== true) {
-			Yii::log(Yii::t('app', "Not sending message '{msg}' to queue {queue_label}.", array('{msg}' => $queueMessage->body, '{queue_label}' => $this->label)), CLogger::LEVEL_INFO, 'nfy');
+			Yii::info(Yii::t('app', "Not sending message '{msg}' to queue {queue_label}.", array('{msg}' => $queueMessage->body, '{queue_label}' => $this->label)), 'nfy');
             return;
         }
 
@@ -65,11 +65,11 @@ class DbQueue extends Queue
 
 		$subscriptions = models\DbSubscription::find()->current()->withQueue($this->id)->matchingCategory($category)->all();
         
-        $trx = $queueMessage->getDbConnection()->getCurrentTransaction() !== null ? null : $queueMessage->getDbConnection()->beginTransaction();
+        $trx = $queueMessage->getDb()->transaction !== null ? null : $queueMessage->getDb()->beginTransaction();
         
 		// empty($subscriptions) && 
         if (!$queueMessage->save()) {
-			Yii::log(Yii::t('app', "Failed to save message '{msg}' in queue {queue_label}.", array('{msg}' => $queueMessage->body, '{queue_label}' => $this->label)), CLogger::LEVEL_ERROR, 'nfy');
+			Yii::error(Yii::t('app', "Failed to save message '{msg}' in queue {queue_label}.", array('{msg}' => $queueMessage->body, '{queue_label}' => $this->label)), 'nfy');
             return false;
         }
 
@@ -82,11 +82,11 @@ class DbQueue extends Queue
             }
 
 			if (!$subscriptionMessage->save()) {
-				Yii::log(Yii::t('app', "Failed to save message '{msg}' in queue {queue_label} for the subscription {subscription_id}.", array(
+				Yii::error(Yii::t('app', "Failed to save message '{msg}' in queue {queue_label} for the subscription {subscription_id}.", array(
 					'{msg}' => $queueMessage->body,
 					'{queue_label}' => $this->label,
 					'{subscription_id}' => $subscription->id,
-				)), CLogger::LEVEL_ERROR, 'nfy');
+				)), 'nfy');
 				$success = false;
 			}
             
@@ -99,7 +99,7 @@ class DbQueue extends Queue
 			$trx->commit();
 		}
 
-		Yii::log(Yii::t('app', "Sent message '{msg}' to queue {queue_label}.", array('{msg}' => $queueMessage->body, '{queue_label}' => $this->label)), CLogger::LEVEL_INFO, 'nfy');
+		Yii::info(Yii::t('app', "Sent message '{msg}' to queue {queue_label}.", array('{msg}' => $queueMessage->body, '{queue_label}' => $this->label)), 'nfy');
 
 		return $success;
 	}

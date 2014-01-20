@@ -30,7 +30,7 @@ class DbSubscriptionCategory extends \yii\db\ActiveRecord
 	{
 		return [
 			[['subscription_id', 'category', 'is_exception'], 'required', 'except'=>'search'],
-			['subscription_id', 'numerical', 'integerOnly'=>true],
+			['subscription_id', 'number', 'integerOnly'=>true],
 			['is_exception', 'boolean'],
 		];
 	}

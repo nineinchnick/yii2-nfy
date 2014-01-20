@@ -1,19 +1,21 @@
 <?php
+
+use yii\helpers\Html;
+use nineinchnick\nfy\components\Message;
+
 /* @var $this QueueController */
-/* @var $queue NfyQueueInterface */
+/* @var $queue components\QueueInterface */
 /* @var $queue_name string */
-/* @var $dbMessage NfyDbMessage */
-/* @var $message NfyMessage */
+/* @var $dbMessage models\DbMessage */
+/* @var $message components\Message */
 /* @var $authItems array */
 
-$this->breadcrumbs=array(
-	Yii::t('app', 'Queues')=>array('index'),
-	$queue->label=>array('messages', 'queue_name'=>$queue_name, 'subscriber_id'=>$message->subscriber_id),
-	$message->id,
-);
+$this->params['breadcrumbs'][] = ['label'=>Yii::t('app', 'Queues'), 'url'=>['index']];
+$this->params['breadcrumbs'][] = ['label'=>$queue->label, 'url'=>['messages', 'queue_name'=>$queue_name, 'subscriber_id'=>$message->subscriber_id]];
+$this->params['breadcrumbs'][] = $message->id;
 
 ?>
-<h1><?php echo Yii::t('app', 'Message {id}', array('{id}'=>$message->id)); ?> <small><?php echo $message->created_on; ?></small></h1>
+<h1><?php echo Yii::t('app', 'Message {id}', array('id'=>$message->id)); ?> <small><?php echo $message->created_on; ?></small></h1>
 
 <div style="margin-bottom: 10px; word-break: break-all; white-space: normal;">
     <div>
@@ -21,24 +23,24 @@ $this->breadcrumbs=array(
     </div>
 </div>
 <div>
-<?php if ((int)$message->status === NfyMessage::AVAILABLE): ?>
-	<form method="post" action="<?php echo $this->createMessageUrl($queue_name, $message); ?>">
+<?php if ((int)$message->status === Message::AVAILABLE): ?>
+	<form method="post" action="<?php echo $this->context->createMessageUrl($queue_name, $message); ?>">
 		<?php echo Html::submitButton(Yii::t('app', 'Mark as read'), array('name'=>'delete')); ?>
 	</form>
 <?php endif; ?>
-    <?php echo Html::link(Html::encode(Yii::t('app', 'Back to messages list')), array('messages', 'queue_name'=>$queue_name, 'subscriber_id'=>$message->subscriber_id)); ?>
+    <?php echo Html::a(Html::encode(Yii::t('app', 'Back to messages list')), array('messages', 'queue_name'=>$queue_name, 'subscriber_id'=>$message->subscriber_id)); ?>
 </div>
 
-<?php if ($queue instanceof NfyDbQueue): ?>
-<?php if (!Yii::app()->user->checkAccess('nfy.message.read.subscribed', array(), true, false) && ($otherMessages=$dbMessage->subscriptionMessages(array(
+<?php if ($queue instanceof nineinchnick\nfy\components\DbQueue): ?>
+<?php if (!Yii::$app->user->checkAccess('nfy.message.read.subscribed', array(), true, false) && ($otherMessages=$dbMessage->getSubscriptionMessages(array(
     'with'=>'subscription.subscriber',
-    'order'=>$dbMessage->getDbConnection()->getSchema()->quoteSimpleTableName('subscriptionMessages').'.deleted_on, '.$dbMessage->getDbConnection()->getSchema()->quoteSimpleTableName('subscriber').'.username',
+    'order'=>$dbMessage->getDb()->getSchema()->quoteSimpleTableName('subscriptionMessages').'.deleted_on, '.$dbMessage->getDb()->getSchema()->quoteSimpleTableName('subscriber').'.username',
 ))) != array()): ?>
 <h3><?php echo Yii::t('app', 'Other recipients'); ?>:</h3>
 <ul>
-<?php foreach($otherMessages as $otherMessage): ?>
-    <li><?php echo $otherMessage->deleted_on.' '.$otherMessage->subscription->subscriber; ?></li>
-<?php endforeach; ?>
+<?php /*foreach($otherMessages as $otherMessage): ?>
+    <li><?php echo $otherMessage->deleted_on.' '.($otherMessage->subscription !== null ? $otherMessage->subscription->subscriber : ''); ?></li>
+<?php endforeach;*/ ?>
 </ul>
 <?php endif; // access granted and not empty ?>
-<?php endif; // $queue instanceof NfyDbQueue ?>
+<?php endif; // $queue instanceof DbQueue ?>

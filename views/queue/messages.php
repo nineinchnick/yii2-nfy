@@ -23,7 +23,7 @@ $this->params['breadcrumbs'][] = $queue->label;
 	'viewParams' => array('queue_name' => $queue_name),
 	'layout' => "{summary}\n{pager}\n{items}",
     'pager' => array(
-        'class' => 'LinkPager',
+        'class' => 'yii\widgets\LinkPager',
         'prevPageLabel' => Yii::t('app', 'Newer'),
         'nextPageLabel' => Yii::t('app', 'Older'),
     ),

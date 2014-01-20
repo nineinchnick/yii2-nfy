@@ -31,73 +31,31 @@ abstract class Queue extends \yii\base\Component implements QueueInterface
 	 */
     public function beforeSend($message)
 	{
-		if($this->hasEventHandler('onBeforeSend'))
-		{
-			$event=new CModelEvent($this, array('message'=>$message));
-			$this->onBeforeSend($event);
-			return $event->isValid;
-		}
-		else
-			return true;
+		$event = new QueueEvent(['message'=>$message]);
+		$this->trigger(self::EVENT_BEFORE_SEND, $event);
+		return $event->isValid;
 	}
 	/**
 	 * @inheritdoc
 	 */
     public function afterSend($message)
 	{
-		$this->onAfterSend(new CEvent($this, array('message'=>$message)));
+		$this->trigger(self::EVENT_AFTER_SEND, new QueueEvent(['message'=>$message]));
 	}
 	/**
 	 * @inheritdoc
 	 */
     public function beforeSendSubscription($message, $subscriber_id)
 	{
-		if($this->hasEventHandler('onBeforeSendSubscription'))
-		{
-			$event=new CModelEvent($this, array('message'=>$message, 'subscriber_id'=>$subscriber_id));
-			$this->onBeforeSendSubscription($event);
-			return $event->isValid;
-		}
-		else
-			return true;
+		$event = new QueueEvent(['message'=>$message, 'subscriber_id'=>$subscriber_id]);
+		$this->trigger(self::EVENT_BEFORE_SEND_SUBSCRIPTION, $event);
+		return $event->isValid;
 	}
 	/**
 	 * @inheritdoc
 	 */
     public function afterSendSubscription($message, $subscriber_id)
 	{
-		$this->onAfterSendSubscription(new CEvent($this, array('message'=>$message, 'subscriber_id'=>$subscriber_id)));
-	}
-	/**
-	 * This event is raised before the message is sent to the queue.
-	 * @param CModelEvent $event the event parameter
-	 */
-    public function onBeforeSend($event)
-	{
-		$this->raiseEvent('onBeforeSend',$event);
-	}
-	/**
-	 * This event is raised after the message is sent to the queue.
-	 * @param CEvent $event the event parameter
-	 */
-    public function onAfterSend($event)
-	{
-		$this->raiseEvent('onAfterSend',$event);
-	}
-	/**
-	 * This event is raised before the message is sent to a subscription.
-	 * @param CModelEvent $event the event parameter
-	 */
-    public function onBeforeSendSubscription($event)
-	{
-		$this->raiseEvent('onBeforeSendSubscription',$event);
-	}
-	/**
-	 * This event is raised after the message is sent to a subscription.
-	 * @param CEvent $event the event parameter
-	 */
-    public function onAfterSendSubscription($event)
-	{
-		$this->raiseEvent('onAfterSendSubscription',$event);
+		$this->trigger(self::EVENT_AFTER_SEND_SUBSCRIPTION, new QueueEvent(['message'=>$message, 'subscriber_id'=>$subscriber_id]));
 	}
 }

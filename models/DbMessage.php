@@ -43,9 +43,9 @@ class DbMessage extends \yii\db\ActiveRecord
 	{
 		return [
 			[['queue_id', 'sender_id', 'body'], 'required', 'except'=>'search'],
-			[['sender_id', 'subscription_id', 'timeout'], 'numerical', 'integerOnly'=>true],
-			[['message_id', 'subscription_id', 'timeout'], 'numerical', 'integerOnly'=>true, 'on'=>'search'],
-			['status', 'numerical', 'integerOnly'=>true, 'on'=>'search'],
+			[['sender_id', 'subscription_id', 'timeout'], 'number', 'integerOnly'=>true],
+			[['message_id', 'subscription_id', 'timeout'], 'number', 'integerOnly'=>true, 'on'=>'search'],
+			['status', 'number', 'integerOnly'=>true, 'on'=>'search'],
 			['mimetype', 'safe', 'on'=>'search'],
 		];
 	}
@@ -65,7 +65,7 @@ class DbMessage extends \yii\db\ActiveRecord
 		return $this->hasOne(DbSubscription::className(), ['subscription_id' => 'id']);
 	}
 
-	public function getMessages()
+	public function getSubscriptionMessages()
 	{
 		return $this->hasMany(DbMessage::className(), ['id' => 'message_id']);
 	}
