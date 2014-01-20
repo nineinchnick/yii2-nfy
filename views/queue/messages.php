@@ -32,5 +32,5 @@ $this->params['breadcrumbs'][] = $queue->label;
 <?php endif; ?>
 
 <?php if ($authItems['nfy.message.create']): ?>
-<?php echo $this->renderPartial('_message_form', array('model'=>$model)); ?>
+<?php echo $this->render('_message_form', array('model'=>$model)); ?>
 <?php endif; ?>

@@ -2,6 +2,7 @@
 
 namespace nineinchnick\nfy\components;
 
+use Yii;
 use nineinchnick\nfy\models;
 
 /**
@@ -32,8 +33,8 @@ class DbQueue extends Queue
 		$message->setAttributes(array(
 			'queue_id'		=> $this->id,
 			'timeout'		=> $this->timeout,
-			'sender_id'		=> Yii::app()->hasComponent('user') ? Yii::app()->user->getId() : null,
-			'status'		=> components\Message::AVAILABLE,
+			'sender_id'		=> Yii::$app->hasComponent('user') ? Yii::$app->user->getId() : null,
+			'status'		=> Message::AVAILABLE,
 			'body'			=> $body,
 		), false);
 		return $this->formatMessage($message);
@@ -106,7 +107,7 @@ class DbQueue extends Queue
 	/**
 	 * @inheritdoc
 	 */
-	public function peek($subscriber_id=null, $limit=-1, $status=components\Message::AVAILABLE)
+	public function peek($subscriber_id=null, $limit=-1, $status=Message::AVAILABLE)
 	{
 		$pk = models\DbMessage::primaryKey();
 		$messages = models\DbMessage::find()->withQueue($this->id)->withSubscriber($subscriber_id)->withStatus($status, $this->timeout)->limit($limit)->indexBy($pk[0])->all();
@@ -140,9 +141,9 @@ class DbQueue extends Queue
 		if (!empty($messages)) {
 			$now = new DateTime('now', new DateTimezone('UTC'));
 			if ($mode === self::GET_DELETE) {
-				$attributes = array('status'=>components\Message::DELETED, 'deleted_on'=>$now->format('Y-m-d H:i:s'));
+				$attributes = array('status'=>Message::DELETED, 'deleted_on'=>$now->format('Y-m-d H:i:s'));
 			} elseif ($mode === self::GET_RESERVE) {
-				$attributes = array('status'=>components\Message::RESERVED, 'reserved_on'=>$now->format('Y-m-d H:i:s'));
+				$attributes = array('status'=>Message::RESERVED, 'reserved_on'=>$now->format('Y-m-d H:i:s'));
 			}
 			models\DbMessage::updateAll($attributes, ['in', models\DbMessage::primaryKey(), array_keys($messages)]);
 		}
@@ -161,7 +162,7 @@ class DbQueue extends Queue
 		$pk = models\DbMessage::primaryKey();
 		$message_ids = models\DbMessage::find()->withQueue($this->id)->withSubscriber($subscriber_id)->reserved($this->timeout)->select($pk)->andWhere(['in',$pk,$message_id])->column();
 		$now = new DateTime('now', new DateTimezone('UTC'));
-		models\DbMessage::updateAll(array('status'=>components\Message::DELETED, 'deleted_on'=>$now->format('Y-m-d H:i:s')), ['in', $pk, $message_ids]);
+		models\DbMessage::updateAll(array('status'=>Message::DELETED, 'deleted_on'=>$now->format('Y-m-d H:i:s')), ['in', $pk, $message_ids]);
 		if ($trx !== null) {
 			$trx->commit();
 		}
@@ -176,7 +177,7 @@ class DbQueue extends Queue
         $trx = models\DbMessage::getDb()->transaction !== null ? null : models\DbMessage::getDb()->beginTransaction();
 		$pk = models\DbMessage::primaryKey();
 		$message_ids = models\DbMessage::find()->withQueue($this->id)->withSubscriber($subscriber_id)->reserved($this->timeout)->select($pk)->andWhere(['in',$pk,$message_id])->column();
-		models\DbMessage::updateAll(array('status'=>components\Message::AVAILABLE), ['in', $pk, $message_ids]);
+		models\DbMessage::updateAll(array('status'=>Message::AVAILABLE), ['in', $pk, $message_ids]);
 		if ($trx !== null) {
 			$trx->commit();
 		}
@@ -192,7 +193,7 @@ class DbQueue extends Queue
         $trx = models\DbMessage::getDb()->transaction !== null ? null : models\DbMessage::getDb()->beginTransaction();
 		$pk = models\DbMessage::primaryKey();
 		$message_ids = models\DbMessage::find()->withQueue($this->id)->timedout($this->timeout)->select($pk)->andWhere(['in',$pk,$message_id])->column();
-		models\DbMessage::updateAll(array('status'=>components\Message::AVAILABLE), ['in', $pk, $message_ids]);
+		models\DbMessage::updateAll(array('status'=>Message::AVAILABLE), ['in', $pk, $message_ids]);
 		if ($trx !== null) {
 			$trx->commit();
 		}

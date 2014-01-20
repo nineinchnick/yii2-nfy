@@ -1,31 +1,36 @@
 <?php
-/* @var $model MessageForm */
-/* @var $form CActiveForm */
+
+use nineinchnick\nfy\components;
+use yii\helpers\Html;
+use yii\widgets\ActiveForm;
+
+/**
+ * @var yii\web\View $this
+ * @var models\MessageForm $model
+ * @var ActiveForm $form
+ */
 ?>
 <div class="form">
 
-<?php $form=$this->beginWidget('CActiveForm', array(
+<?php $form = ActiveForm::begin([
 	'id'=>'message-form',
 	'enableAjaxValidation'=>false,
-)); ?>
+]); ?>
 	<?php echo $form->errorSummary($model); ?>
 
-	<div class="">
-        <?php echo $form->label($model, 'category'); ?>
-		<?php echo $form->textField($model, 'category'); ?>
+	<div class="row">
+		<div class="col-lg-5">
+
+			<?php echo $form->field($model, 'category'); ?>
+			<?php echo $form->field($model, 'content')->textArea(['rows'=>6]); ?>
+
+			<div class="form-group">
+				<?= Html::submitButton(Yii::t('app', 'Submit'), ['class' => 'btn btn-primary']) ?>
+			</div>
+		</div>
+
 	</div>
 
-	<div class="">
-        <?php echo $form->label($model, 'content'); ?>
-		<?php echo $form->textArea($model,'content', array('style'=>'width: 600px;', 'rows'=>5)); ?>
-	</div>
-
-    <br/>
-    
-	<div class="buttons">
-		<?php echo CHtml::submitButton(Yii::t('app', 'Submit')); ?>
-	</div>
-
-<?php $this->endWidget(); ?>
+<?php ActiveForm::end(); ?>
 
 </div><!-- form -->

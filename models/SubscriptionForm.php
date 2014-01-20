@@ -18,7 +18,7 @@ class SubscriptionForm extends Model
 	{
         return [
             [['label', 'categories', 'exceptions'], 'filter', 'filter'=>'trim'],
-            [['label', 'categories', 'exceptions'], 'default', 'setOnEmpty'=>true, 'value' => null],
+            [['label', 'categories', 'exceptions'], 'default'],
             [['categories', 'exceptions'], 'prepare'],
         ];
     }

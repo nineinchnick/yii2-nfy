@@ -17,7 +17,7 @@ class MessageForm extends Model
 	{
         return [
             [['content', 'category'], 'filter', 'filter'=>'trim'],
-            [['content', 'category'], 'default', 'setOnEmpty'=>true, 'value' => null],
+            [['content', 'category'], 'default'],
             ['content', 'required'],
         ];
     }

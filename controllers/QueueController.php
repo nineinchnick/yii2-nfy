@@ -56,7 +56,7 @@ class QueueController extends \yii\web\Controller
 	{
         list($queue, $authItems) = $this->loadQueue($queue_name, ['nfy.queue.subscribe']);
 
-		$formModel = new SubscriptionForm('create');
+		$formModel = new models\SubscriptionForm;
         if (isset($_POST['SubscriptionForm'])) {
 			$formModel->attributes=$_POST['SubscriptionForm'];
 			if($formModel->validate()) {
@@ -91,7 +91,6 @@ class QueueController extends \yii\web\Controller
 		$this->verifySubscriber($queue, $subscriber_id);
 
 		$formModel = new models\MessageForm;
-		$formModel->scenario = 'create';
         if ($authItems['nfy.message.create'] && isset($_POST['MessageForm'])) {
 			$formModel->attributes=$_POST['MessageForm'];
 			if($formModel->validate()) {
