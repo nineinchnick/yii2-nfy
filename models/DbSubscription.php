@@ -2,6 +2,9 @@
 
 namespace nineinchnick\nfy\models;
 
+use Yii;
+use nineinchnick\nfy\components;
+
 /**
  * This is the model class for table "{{nfy_subscriptions}}".
  *
@@ -47,7 +50,7 @@ class DbSubscription extends \yii\db\ActiveRecord
 
 	public function getSubscriber()
 	{
-		return $this->hasOne(Yii::$app->getModule('nfy')->userClass, ['subscriber_id' => 'id']);
+		return $this->hasOne(Yii::$app->getModule('nfy')->userClass, ['id' => 'subscriber_id']);
 	}
 
 	public function getCategories()
@@ -77,7 +80,7 @@ class DbSubscription extends \yii\db\ActiveRecord
 
 	public function beforeSave($insert) {
 		if ($insert && $this->created_on === null) {
-			$now = new DateTime('now', new DateTimezone('UTC'));
+			$now = new \DateTime('now', new \DateTimezone('UTC'));
 			$this->created_on = $now->format('Y-m-d H:i:s');
 		}
 		return parent::beforeSave($insert);
@@ -146,7 +149,7 @@ class DbSubscription extends \yii\db\ActiveRecord
 			unset($attributes['id']);
 			unset($attributes['queue_id']);
 			unset($attributes['is_deleted']);
-			$subscription = new Subscription;
+			$subscription = new components\Subscription;
 			$subscription->setAttributes($attributes);
 			foreach($dbSubscription->categories as $category) {
 				if ($category->is_exception) {

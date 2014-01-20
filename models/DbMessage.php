@@ -52,17 +52,17 @@ class DbMessage extends \yii\db\ActiveRecord
 
 	public function getMainMessage()
 	{
-		return $this->hasOne(DbMessage::className(), ['message_id' => 'id']);
+		return $this->hasOne(DbMessage::className(), ['id' => 'message_id']);
 	}
 
 	public function getSender()
 	{
-		return $this->hasOne(Yii::$app->getModule('nfy')->userClass, ['sender_id' => 'id']);
+		return $this->hasOne(Yii::$app->getModule('nfy')->userClass, ['id' => 'sender_id']);
 	}
 
 	public function getSubscription()
 	{
-		return $this->hasOne(DbSubscription::className(), ['subscription_id' => 'id']);
+		return $this->hasOne(DbSubscription::className(), ['id' => 'subscription_id']);
 	}
 
 	public function getSubscriptionMessages()
@@ -104,7 +104,7 @@ class DbMessage extends \yii\db\ActiveRecord
 
 	public function __clone()
 	{
-		$this->primaryKey = null;
+		$this->id = null;
 		$this->subscription_id = null;
 		$this->isNewRecord = true;
 	}

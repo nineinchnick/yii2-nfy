@@ -1,44 +1,40 @@
 <?php
-/* @var $this DefaultController */
-/* @var $queue NfyQueueInterface */
-/* @var $model SubscriptionForm */
-/* @var $form CActiveForm */
 
-$this->breadcrumbs=array(
-	Yii::t('app', 'Queues')=>array('index'),
-	$queue->label,
-);
+use nineinchnick\nfy\components;
+use yii\helpers\Html;
+use yii\widgets\ActiveForm;
+
+/* @var yii\web\View $this */
+/* @var $queue components\QueueInterface */
+/* @var $model models\SubscriptionForm */
+/* @var ActiveForm $form */
+
+$this->params['breadcrumbs'][] = ['label'=>Yii::t('app', 'Queues'), 'url'=>['index']];
+$this->params['breadcrumbs'][] = $queue->label;
 ?>
 <h1><?php echo $queue->label; ?></h1>
 <div class="form">
 
-<?php $form=$this->beginWidget('CActiveForm', array(
+<?php $form = ActiveForm::begin([
 	'id'=>'subscription-form',
 	'enableAjaxValidation'=>false,
-)); ?>
+]); ?>
 	<?php echo $form->errorSummary($model); ?>
 
 	<div class="row">
-        <?php echo $form->label($model, 'label'); ?>
-        <?php echo $form->textField($model, 'label'); ?>
+		<div class="col-lg-5">
+
+        <?php echo $form->field($model, 'label'); ?>
+        <?php echo $form->field($model, 'categories'); ?>
+        <?php echo $form->field($model, 'exceptions'); ?>
+
+			<div class="form-group">
+				<?= Html::submitButton(Yii::t('app', 'Submit'), ['class' => 'btn btn-primary']) ?>
+			</div>
+		</div>
+
 	</div>
 
-	<div class="row">
-        <?php echo $form->label($model, 'categories'); ?>
-        <?php echo $form->textField($model, 'categories'); ?>
-	</div>
-
-	<div class="row">
-        <?php echo $form->label($model, 'exceptions'); ?>
-        <?php echo $form->textField($model, 'exceptions'); ?>
-	</div>
-
-    <br/>
-    
-	<div class="row buttons">
-		<?php echo CHtml::submitButton(Yii::t('app', 'Submit')); ?>
-	</div>
-
-<?php $this->endWidget(); ?>
+<?php ActiveForm::end(); ?>
 
 </div><!-- form -->
