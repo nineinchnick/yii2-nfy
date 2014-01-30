@@ -7,48 +7,57 @@ namespace nineinchnick\nfy\models;
  */
 class DbMessageQuery extends \yii\db\ActiveQuery
 {
-	public static function deleted()
+	/**
+	 * @return DbMessageQuery $this
+	 */
+	public function deleted()
 	{
 		$modelClass = $this->modelClass;
 		$this->andWhere($modelClass::tableName().'.status = '.Message::DELETED);
+		return $this;
 	}
 
 	/**
 	 * @param integer $timeout
+	 * @return DbMessageQuery $this
 	 */
-	public static function available($timeout=null)
+	public function available($timeout=null)
 	{
-		self::withStatus($this, Message::AVAILABLE, $timeout);
+		return self::withStatus(Message::AVAILABLE, $timeout);
 	}
 
 	/**
 	 * @param integer $timeout
+	 * @return DbMessageQuery $this
 	 */
-	public static function reserved($timeout=null)
+	public function reserved($timeout=null)
 	{
-		self::withStatus($this, Message::RESERVED, $timeout);
+		return self::withStatus(Message::RESERVED, $timeout);
 	}
 
 	/**
 	 * @param integer $timeout
+	 * @return DbMessageQuery $this
 	 */
-	public static function timedout($timeout=null)
+	public function timedout($timeout=null)
 	{
 		if ($timeout === null) {
 			$this->andWhere('1=0');
-			return;
+			return $this;
 		}
 		$now = new \DateTime($timeout === null ? '' : "-$timeout seconds", new \DateTimezone('UTC'));
 		$modelClass = $this->modelClass;
         $t = $modelClass::tableName();
 		$this->andWhere("($t.status=".Message::RESERVED." AND $t.reserved_on <= :timeout)", [':timeout'=>$now->format('Y-m-d H:i:s')]);
+		return $this;
 	}
 
 	/**
 	 * @param array|string $statuses
 	 * @param integer $timeout
+	 * @return DbMessageQuery $this
 	 */
-	public static function withStatus($statuses, $timeout=null)
+	public function withStatus($statuses, $timeout=null)
 	{
 		if (!is_array($statuses))
 			$statuses = [$statuses];
@@ -90,24 +99,28 @@ class DbMessageQuery extends \yii\db\ActiveQuery
 		if ($conditions !== ['or']) {
 			$this->andWhere($conditions);
 		}
+		return $this;
 	}
 
 	/**
 	 * @param string $queue_id
+	 * @return DbMessageQuery $this
 	 */
-	public static function withQueue($queue_id)
+	public function withQueue($queue_id)
 	{
 		$modelClass = $this->modelClass;
         $t = $modelClass::tableName();
 		$pk = $modelClass::primaryKey();
 		$this->andWhere($t.'.queue_id=:queue_id', [':queue_id'=>$queue_id]);
 		$this->orderBy = ["$t.{$pk[0]}"=>'ASC'];
+		return $this;
 	}
 
 	/**
 	 * @param string $subscriber_id
+	 * @return DbMessageQuery $this
 	 */
-	public static function withSubscriber($subscriber_id=null)
+	public function withSubscriber($subscriber_id=null)
 	{
 		if ($subscriber_id === null) {
 			$modelClass = $this->modelClass;
@@ -117,5 +130,6 @@ class DbMessageQuery extends \yii\db\ActiveQuery
 			$this->innerJoinWith('subscription');
 			$this->andWhere(DbSubscription::tableName().'.subscriber_id=:subscriber_id', [':subscriber_id'=>$subscriber_id]);
 		}
+		return $this;
 	}
 }
