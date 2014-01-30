@@ -2,6 +2,8 @@
 
 namespace nineinchnick\nfy\models;
 
+use nineinchnick\nfy\components\Message;
+
 /**
  * Collection of scopes for the DbMessage AR model.
  */
