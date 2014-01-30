@@ -7,59 +7,52 @@ namespace nineinchnick\nfy\models;
  */
 class DbMessageQuery extends \yii\db\ActiveQuery
 {
-	/**
-	 * @param ActiveQuery $query
-	 */
-	public static function deleted($query)
+	public static function deleted()
 	{
-		$modelClass = $query->modelClass;
-		$query->andWhere($modelClass::tableName().'.status = '.Message::DELETED);
+		$modelClass = $this->modelClass;
+		$this->andWhere($modelClass::tableName().'.status = '.Message::DELETED);
 	}
 
 	/**
-	 * @param ActiveQuery $query
 	 * @param integer $timeout
 	 */
-	public static function available($query, $timeout=null)
+	public static function available($timeout=null)
 	{
-		self::withStatus($query, Message::AVAILABLE, $timeout);
+		self::withStatus($this, Message::AVAILABLE, $timeout);
 	}
 
 	/**
-	 * @param ActiveQuery $query
 	 * @param integer $timeout
 	 */
-	public static function reserved($query, $timeout=null)
+	public static function reserved($timeout=null)
 	{
-		self::withStatus($query, Message::RESERVED, $timeout);
+		self::withStatus($this, Message::RESERVED, $timeout);
 	}
 
 	/**
-	 * @param ActiveQuery $query
 	 * @param integer $timeout
 	 */
-	public static function timedout($query, $timeout=null)
+	public static function timedout($timeout=null)
 	{
 		if ($timeout === null) {
-			$query->andWhere('1=0');
+			$this->andWhere('1=0');
 			return;
 		}
 		$now = new \DateTime($timeout === null ? '' : "-$timeout seconds", new \DateTimezone('UTC'));
-		$modelClass = $query->modelClass;
+		$modelClass = $this->modelClass;
         $t = $modelClass::tableName();
-		$query->andWhere("($t.status=".Message::RESERVED." AND $t.reserved_on <= :timeout)", [':timeout'=>$now->format('Y-m-d H:i:s')]);
+		$this->andWhere("($t.status=".Message::RESERVED." AND $t.reserved_on <= :timeout)", [':timeout'=>$now->format('Y-m-d H:i:s')]);
 	}
 
 	/**
-	 * @param ActiveQuery $query
 	 * @param array|string $statuses
 	 * @param integer $timeout
 	 */
-	public static function withStatus($query, $statuses, $timeout=null)
+	public static function withStatus($statuses, $timeout=null)
 	{
 		if (!is_array($statuses))
 			$statuses = [$statuses];
-		$modelClass = $query->modelClass;
+		$modelClass = $this->modelClass;
         $t = $modelClass::tableName();
 		$now = new \DateTime($timeout === null ? '' : "-$timeout seconds", new \DateTimezone('UTC'));
 		$conditions = ['or'];
@@ -77,13 +70,13 @@ class DbMessageQuery extends \yii\db\ActiveQuery
 						$conditions[] = "$t.status=".$status;
 						if ($timeout !== null) {
 							$conditions[] = "($t.status=".Message::RESERVED." AND $t.reserved_on <= :timeout)";
-							$query->addParams([':timeout'=>$now->format('Y-m-d H:i:s')]);
+							$this->addParams([':timeout'=>$now->format('Y-m-d H:i:s')]);
 						}
 						break;
 					case Message::RESERVED:
 						if ($timeout !== null) {
 							$conditions[] = "($t.status=$status AND $t.reserved_on > :timeout)";
-							$query->addParams([':timeout'=>$now->format('Y-m-d H:i:s')]);
+							$this->addParams([':timeout'=>$now->format('Y-m-d H:i:s')]);
 						} else {
 							$conditions[] = "$t.status=".$status;
 						}
@@ -95,36 +88,34 @@ class DbMessageQuery extends \yii\db\ActiveQuery
 			}
 		}
 		if ($conditions !== ['or']) {
-			$query->andWhere($conditions);
+			$this->andWhere($conditions);
 		}
 	}
 
 	/**
-	 * @param ActiveQuery $query
 	 * @param string $queue_id
 	 */
-	public static function withQueue($query, $queue_id)
+	public static function withQueue($queue_id)
 	{
-		$modelClass = $query->modelClass;
+		$modelClass = $this->modelClass;
         $t = $modelClass::tableName();
 		$pk = $modelClass::primaryKey();
-		$query->andWhere($t.'.queue_id=:queue_id', [':queue_id'=>$queue_id]);
-		$query->orderBy = ["$t.{$pk[0]}"=>'ASC'];
+		$this->andWhere($t.'.queue_id=:queue_id', [':queue_id'=>$queue_id]);
+		$this->orderBy = ["$t.{$pk[0]}"=>'ASC'];
 	}
 
 	/**
-	 * @param ActiveQuery $query
 	 * @param string $subscriber_id
 	 */
-	public static function withSubscriber($query, $subscriber_id=null)
+	public static function withSubscriber($subscriber_id=null)
 	{
 		if ($subscriber_id === null) {
-			$modelClass = $query->modelClass;
+			$modelClass = $this->modelClass;
 			$t = $modelClass::tableName();
-			$query->andWhere("$t.subscription_id IS NULL");
+			$this->andWhere("$t.subscription_id IS NULL");
 		} else {
-			$query->innerJoinWith('subscription');
-			$query->andWhere(DbSubscription::tableName().'.subscriber_id=:subscriber_id', [':subscriber_id'=>$subscriber_id]);
+			$this->innerJoinWith('subscription');
+			$this->andWhere(DbSubscription::tableName().'.subscriber_id=:subscriber_id', [':subscriber_id'=>$subscriber_id]);
 		}
 	}
 }
