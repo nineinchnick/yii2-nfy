@@ -55,8 +55,8 @@ class Message
 	public function __sleep()
 	{
 		$attributes = array('id', 'created_on', 'sender_id', 'timeout', 'body');
-		if ($status == self::RESERVED) $attributes[] = 'reserved_on';
-		if ($status == self::DELETED) $attributes[] = 'deleted_on';
+		if ($this->status == self::RESERVED) $attributes[] = 'reserved_on';
+		if ($this->status == self::DELETED) $attributes[] = 'deleted_on';
 		return $attributes;
 	}
 

@@ -2,6 +2,10 @@
 
 namespace nineinchnick\nfy\components;
 
+use Yii;
+use yii\base\InvalidConfigException;
+use yii\base\NotSupportedException;
+
 /**
  * Saves sent messages and tracks subscriptions using a redis component.
  *
@@ -20,22 +24,23 @@ class RedisQueue extends Queue
 	const SUBSCRIPTIONS_HASH = ':subscriptions';
 	const SUBSCRIPTION_LIST_PREFIX = ':subscription:';
 	/**
-	 * @var string|NfyRedisConnection Name or a redis connection component to use as storage.
+	 * @var string|yii\redis\Connection Name or a redis connection component to use as storage.
 	 */
 	public $redis = 'redis';
 
 	/**
 	 * @inheritdoc
+	 * @throws InvalidConfigException
 	 */
 	public function init()
 	{
 		parent::init();
 		if (is_string($this->redis)) {
-			$this->redis = Yii::app()->getComponent($this->redis);
+			$this->redis = Yii::$app->getComponent($this->redis);
 		} elseif (is_array($this->redis)) {
 		}
-		if (!($this->redis instanceof NfyRedisConnection)) {
-			throw new CException('The redis property must contain a name or a valid NfyRedisConnection component.');
+		if (!($this->redis instanceof yii\redis\Connection)) {
+			throw new InvalidConfigException('The redis property must contain a name or a valid yii\redis\Connection component.');
 		}
 	}
 
@@ -47,13 +52,13 @@ class RedisQueue extends Queue
 	 */
 	protected function createMessage($body)
 	{
-		$now = new DateTime('now', new DateTimezone('UTC'));
+		$now = new \DateTime('now', new \DateTimezone('UTC'));
 		$message = new Message;
 		$message->setAttributes(array(
 			'id'			=> $this->redis->incr($this->id.self::MESSAGE_ID),
 			'status'		=> Message::AVAILABLE,
 			'created_on'	=> $now->format('Y-m-d H:i:s'),
-			'sender_id'		=> Yii::app()->hasComponent('user') ? Yii::app()->user->getId() : null,
+			'sender_id'		=> Yii::$app->hasComponent('user') ? Yii::$app->user->getId() : null,
 			'body'			=> $body,
 		));
 		return $this->formatMessage($message);
@@ -76,7 +81,7 @@ class RedisQueue extends Queue
 		$queueMessage = $this->createMessage($message);
 
         if ($this->beforeSend($queueMessage) !== true) {
-			Yii::log(Yii::t('app', "Not sending message '{msg}' to queue {queue_label}.", array('{msg}' => $queueMessage->body, '{queue_label}' => $this->label)), CLogger::LEVEL_INFO, 'nfy');
+			Yii::info(Yii::t('app', "Not sending message '{msg}' to queue {queue_label}.", array('{msg}' => $queueMessage->body, '{queue_label}' => $this->label)), 'nfy');
             return;
         }
 
@@ -88,7 +93,7 @@ class RedisQueue extends Queue
 
         $this->afterSend($queueMessage);
 
-		Yii::log(Yii::t('app', "Sent message '{msg}' to queue {queue_label}.", array('{msg}' => $queueMessage->body, '{queue_label}' => $this->label)), CLogger::LEVEL_INFO, 'nfy');
+		Yii::info(Yii::t('app', "Sent message '{msg}' to queue {queue_label}.", array('{msg}' => $queueMessage->body, '{queue_label}' => $this->label)), 'nfy');
 	}
 
 	private function sendToList($queueMessage, $category)
@@ -119,11 +124,12 @@ class RedisQueue extends Queue
 
 	/**
 	 * @inheritdoc
+	 * @throws InvalidConfigException
 	 */
 	public function peek($subscriber_id=null, $limit=-1, $status=Message::AVAILABLE)
 	{
 		if ($this->blocking) {
-			throw new CException('Not supported. When in blocking mode peeking is not available. Use the receive() method.');
+			throw new NotSupportedException('When in blocking mode peeking is not available. Use the receive() method.');
 		}
 		//! @todo implement peeking at other lists, joining, sorting results by date and limiting, remember about settings status after unserialize
 		$list_id = $this->id.($subscriber_id === null ? '' : self::SUBSCRIPTION_LIST_PREFIX.$subscriber_id);
@@ -139,18 +145,19 @@ class RedisQueue extends Queue
 
 	/**
 	 * @inheritdoc
+	 * @throws InvalidConfigException
 	 */
 	public function reserve($subscriber_id=null, $limit=-1)
 	{
 		if ($this->blocking) {
-			throw new CException('Not supported. When in blocking mode reserving is not available. Use the receive() method.');
+			throw new NotSupportedException('When in blocking mode reserving is not available. Use the receive() method.');
 		}
 
 		$messages = array();
 		$count = 0;
 		$list_id = $this->id.($subscriber_id === null ? '' : self::SUBSCRIPTION_LIST_PREFIX.$subscriber_id);
 		$reserved_list_id = $list_id.self::RESERVED_LIST;
-		$now = new DateTime;
+		$now = new \DateTime;
 		$this->redis->multi();
 		while (($limit == -1 || $count < $limit)) {
 			if (($rawMessage=$this->redis->rpop($list_id)) === null) {
@@ -212,22 +219,24 @@ class RedisQueue extends Queue
 
 	/**
 	 * @inheritdoc
+	 * @throws NotSupportedException
 	 */
 	public function delete($message_id, $subscriber_id=null)
 	{
 		if ($this->blocking) {
-			throw new CException('Not supported. When in blocking mode reserving is not available. Use the receive() method.');
+			throw new NotSupportedException('When in blocking mode reserving is not available. Use the receive() method.');
 		}
 		$this->releaseInternal($message_id, true);
 	}
 
 	/**
 	 * @inheritdoc
+	 * @throws NotSupportedException
 	 */
 	public function release($message_id, $subscriber_id=null)
 	{
 		if ($this->blocking) {
-			throw new CException('Not supported. When in blocking mode reserving is not available. Use the receive() method.');
+			throw new NotSupportedException('When in blocking mode reserving is not available. Use the receive() method.');
 		}
 		$this->releaseInternal($message_id, false);
 	}
@@ -268,10 +277,10 @@ class RedisQueue extends Queue
 		foreach($keys as $reserved_list_id) {
 			$list_id = substr($reserved_list_id, 0, -strlen(self::RESERVED_LIST));
 			$messages = array_reverse($this->redis->lrange($reserved_list_id, 0, -1));
-			$now = new DateTime;
+			$now = new \DateTime;
 			foreach($messages as $rawMessage) {
 				$message = unserialize($rawMessage);
-				$reserved_on = new DateTime($message->reserved_on);
+				$reserved_on = new \DateTime($message->reserved_on);
 				if ($reserved_on->add(new DateInterval('PT'.$message->timeout.'S')) <= $now) {
 					$this->redis->lrem($reserved_list_id, $rawMessage, -1);
 					$this->redis->lpush($list_id, $rawMessage);
@@ -285,12 +294,13 @@ class RedisQueue extends Queue
 
 	/**
 	 * @inheritdoc
+	 * @throws NotSupportedException
 	 */
 	public function subscribe($subscriber_id, $label=null, $categories=null, $exceptions=null)
 	{
 		if ($this->blocking) {
 			if ($exceptions !== null) {
-				throw new CException('Not supported. Redis queues does not support pattern exceptions in blocking (pubsub) mode.');
+				throw new NotSupportedException('Redis queues does not support pattern exceptions in blocking (pubsub) mode.');
 			}
 			foreach($categories as $category) {
 				if (($c=rtrim($category,'*'))!==$category) {
@@ -301,7 +311,7 @@ class RedisQueue extends Queue
 			}
 			return;
 		}
-		$now = new DateTime('now', new DateTimezone('UTC'));
+		$now = new \DateTime('now', new \DateTimezone('UTC'));
 		$subscription = new Subscription;
 		$subscription->setAttributes(array(
 			'subscriber_id'=>$subscriber_id,
@@ -328,11 +338,12 @@ class RedisQueue extends Queue
 
 	/**
 	 * @inheritdoc
+	 * @throws NotSupportedException
 	 */
 	public function isSubscribed($subscriber_id)
 	{
 		if ($this->blocking) {
-			throw new CException('Not supported. In blocking mode it is not possible to track subscribers.');
+			throw new NotSupportedException('In blocking mode it is not possible to track subscribers.');
 			return;
 		}
 		return $this->redis->hexists($this->id.self::SUBSCRIPTIONS_HASH, $subscriber_id);

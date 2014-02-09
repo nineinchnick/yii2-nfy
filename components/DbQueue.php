@@ -4,6 +4,8 @@ namespace nineinchnick\nfy\components;
 
 use Yii;
 use nineinchnick\nfy\models;
+use yii\base\Exception;
+use yii\base\NotSupportedException;
 
 /**
  * Saves sent messages and tracks subscriptions in a database.
@@ -12,12 +14,13 @@ class DbQueue extends Queue
 {
 	/**
 	 * @inheritdoc
+	 * @throws NotSupportedException
 	 */
 	public function init()
 	{
 		parent::init();
 		if ($this->blocking) {
-			throw new CException(Yii::t('app', 'Not implemented. DbQueue does not support blocking.'));
+			throw new NotSupportedException(Yii::t('app', 'DbQueue does not support blocking.'));
 		}
 	}
 
@@ -139,7 +142,7 @@ class DbQueue extends Queue
 		$trx = models\DbMessage::getDb()->transaction !== null ? null : models\DbMessage::getDb()->beginTransaction();
 		$messages = models\DbMessage::find()->withQueue($this->id)->withSubscriber($subscriber_id)->available($this->timeout)->limit($limit)->indexBy($pk[0])->all();
 		if (!empty($messages)) {
-			$now = new DateTime('now', new DateTimezone('UTC'));
+			$now = new \DateTime('now', new \DateTimezone('UTC'));
 			if ($mode === self::GET_DELETE) {
 				$attributes = array('status'=>Message::DELETED, 'deleted_on'=>$now->format('Y-m-d H:i:s'));
 			} elseif ($mode === self::GET_RESERVE) {
@@ -161,7 +164,7 @@ class DbQueue extends Queue
         $trx = models\DbMessage::getDb()->transaction !== null ? null : models\DbMessage::getDb()->beginTransaction();
 		$pk = models\DbMessage::primaryKey();
 		$message_ids = models\DbMessage::find()->withQueue($this->id)->withSubscriber($subscriber_id)->reserved($this->timeout)->select($pk)->andWhere(['in',$pk,$message_id])->column();
-		$now = new DateTime('now', new DateTimezone('UTC'));
+		$now = new \DateTime('now', new \DateTimezone('UTC'));
 		models\DbMessage::updateAll(array('status'=>Message::DELETED, 'deleted_on'=>$now->format('Y-m-d H:i:s')), ['in', $pk, $message_ids]);
 		if ($trx !== null) {
 			$trx->commit();
@@ -219,7 +222,7 @@ class DbQueue extends Queue
 			models\DbSubscriptionCategory::deleteAll('subscription_id=:subscription_id', [':subscription_id'=>$subscription->primaryKey]);
 		}
 		if (!$subscription->save())
-			throw new CException(Yii::t('app', 'Failed to subscribe {subscriber_id} to {queue_label}', array('{subscriber_id}'=>$subscriber_id, '{queue_label}'=>$this->label)));
+			throw new Exception(Yii::t('app', 'Failed to subscribe {subscriber_id} to {queue_label}', array('{subscriber_id}'=>$subscriber_id, '{queue_label}'=>$this->label)));
 		$this->saveSubscriptionCategories($categories, $subscription->primaryKey, false);
 		$this->saveSubscriptionCategories($exceptions, $subscription->primaryKey, true);
 		if ($trx !== null) {
@@ -242,7 +245,7 @@ class DbQueue extends Queue
 				'is_exception'		=> $are_exceptions ? 1 : 0,
 			));
 			if (!$subscriptionCategory->save())
-				throw new CException(Yii::t('app', 'Failed to save category {category} for subscription {subscription_id}', array('{category}'=>$category, '{subscription_id}'=>$subscription_id)));
+				throw new Exception(Yii::t('app', 'Failed to save category {category} for subscription {subscription_id}', array('{category}'=>$category, '{subscription_id}'=>$subscription_id)));
 		}
 		return true;
 	}

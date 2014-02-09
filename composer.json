@@ -1,7 +1,6 @@
 {
     "name": "nineinchnick/yii2-nfy",
     "description": "A generic message queue interface with various implementations for the Yii 2.0 framework. Basic interface included.",
-	"version": "0.9.5",
     "license": "MIT",
 	"type": "yii2-module",
     "authors": [

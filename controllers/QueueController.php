@@ -4,7 +4,7 @@ namespace nineinchnick\nfy\controllers;
 
 use Yii;
 use yii\web\BadRequestHttpException;
-use yii\web\AccessDeniedHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use nineinchnick\nfy\components;
 use nineinchnick\nfy\models;
@@ -141,6 +141,7 @@ class QueueController extends \yii\web\Controller
 			$messages = models\DbMessage::createMessages($dbMessage);
 			$message = reset($messages);
 		} else {
+			$dbMessage = null;
 			//! @todo should we even bother to locate a single message by id?
 			$message = new components\Message;
 			$message->setAttributes([
@@ -169,7 +170,7 @@ class QueueController extends \yii\web\Controller
 	 * @param string $name queue component name
 	 * @param array $authItems
 	 * @return array QueueInterface object and array with authItems as keys and boolean values
-	 * @throws AccessDeniedHttpException,NotFoundHttpException
+	 * @throws ForbiddenHttpException,NotFoundHttpException
 	 */
     protected function loadQueue($name, $authItems=[])
     {
@@ -187,7 +188,7 @@ class QueueController extends \yii\web\Controller
                 $allowAccess = true;
         }
         if (!$allowAccess) {
-            throw new AccessDeniedHttpException(Yii::t('yii','You are not authorized to perform this action.'));
+            throw new ForbiddenHttpException(Yii::t('yii','You are not authorized to perform this action.'));
         }
         return [$queue, $assignedAuthItems];
     }
@@ -196,7 +197,7 @@ class QueueController extends \yii\web\Controller
 	 * Checks if current user can read only messages from subscribed queues and is subscribed.
 	 * @param QueueInterface $queue
 	 * @param integer $subscriber_id
-	 * @throws AccessDeniedHttpException
+	 * @throws ForbiddenHttpException
 	 */
 	protected function verifySubscriber($queue, $subscriber_id)
 	{
@@ -204,13 +205,13 @@ class QueueController extends \yii\web\Controller
 		$user = Yii::$app->user;
         $subscribedOnly = $user->checkAccess('nfy.message.read.subscribed', [], true, false);
 		if ($subscribedOnly && (!$queue->isSubscribed($user->getId()) || $subscriber_id != $user->getId()))
-            throw new AccessDeniedHttpException(Yii::t('yii','You are not authorized to perform this action.'));
+            throw new ForbiddenHttpException(Yii::t('yii','You are not authorized to perform this action.'));
 	}
 
 	/**
 	 * @param string $id id of the queue component
 	 * @param boolean $subscribed should the queue be checked using current user's subscription
-	 * @throws AccessDeniedHttpException
+	 * @throws ForbiddenHttpException
 	 */
     public function actionPoll($id, $subscribed=true)
     {
@@ -219,7 +220,7 @@ class QueueController extends \yii\web\Controller
 		if (!($queue instanceof components\QueueInterface))
 			return [];
 		if (!Yii::$app->user->checkAccess('nfy.message.read', ['queue'=>$queue]))
-            throw new AccessDeniedHttpException(Yii::t('yii','You are not authorized to perform this action.'));
+            throw new ForbiddenHttpException(Yii::t('yii','You are not authorized to perform this action.'));
 
 		Yii::$app->session->close();
 

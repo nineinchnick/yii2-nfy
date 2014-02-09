@@ -2,6 +2,10 @@
 
 namespace nineinchnick\nfy\components;
 
+use Yii;
+use yii\base\InvalidConfigException;
+use yii\base\NotSupportedException;
+
 /**
  * Sends and receives messages using System V message queues.
  */
@@ -23,12 +27,13 @@ class SysVQueue extends Queue
 
 	/**
 	 * @inheritdoc
+	 * @throws InvalidConfigException
 	 */
 	public function init()
 	{
 		parent::init();
 		if (strlen($this->id)!==1) {
-			throw new CException(Yii::t('app', 'Queue id must be exactly a one character.'));
+			throw new InvalidConfigException(Yii::t('app', 'Queue id must be exactly a one character.'));
 		}
 	}
 
@@ -58,11 +63,11 @@ class SysVQueue extends Queue
 	 */
 	protected function createMessage($body)
 	{
-		$now = new DateTime('now', new DateTimezone('UTC'));
+		$now = new \DateTime('now', new \DateTimezone('UTC'));
 		$message = new Message;
 		$message->setAttributes(array(
 			'created_on'	=> $now->format('Y-m-d H:i:s'),
-			'sender_id'		=> Yii::app()->hasComponent('user') ? Yii::app()->user->getId() : null,
+			'sender_id'		=> Yii::$app->hasComponent('user') ? Yii::$app->user->getId() : null,
 			'body'			=> $body,
 		));
 		return $this->formatMessage($message);
@@ -105,18 +110,20 @@ class SysVQueue extends Queue
 
 	/**
 	 * @inheritdoc
+	 * @throws NotSupportedException
 	 */
 	public function peek($subscriber_id=null, $limit=-1, $status=Message::AVAILABLE)
 	{
-		throw new CException('Not implemented. System V queues does not support peeking. Use the receive() method.');
+		throw new NotSupportedException('Not implemented. System V queues does not support peeking. Use the receive() method.');
 	}
 
 	/**
 	 * @inheritdoc
+	 * @throws NotSupportedException
 	 */
 	public function reserve($subscriber_id=null, $limit=-1)
 	{
-		throw new CException('Not implemented. System V queues does not support reserving messages. Use the receive() method.');
+		throw new NotSupportedException('Not implemented. System V queues does not support reserving messages. Use the receive() method.');
 	}
 
 	/**
@@ -124,11 +131,12 @@ class SysVQueue extends Queue
 	 * @param mixed $subscriber_id unused, must be null
 	 * @param integer $limit number of available messages that will be fetched from the queue, defaults to -1 which means no limit
 	 * @return array of Message objects
+	 * @throws NotSupportedException
 	 */
 	public function receive($subscriber_id=null, $limit=-1)
 	{
 		if ($subscriber_id !== null) {
-			throw new CException('Not implemented. System V queues does not support subscriptions.');
+			throw new NotSupportedException('Not implemented. System V queues does not support subscriptions.');
 		}
 		$flags = $this->blocking ? 0 : MSG_IPC_NOWAIT;
 		$messages = array();
@@ -145,57 +153,64 @@ class SysVQueue extends Queue
 
 	/**
 	 * @inheritdoc
+	 * @throws NotSupportedException
 	 */
 	public function delete($message_id, $subscriber_id=null)
 	{
-		throw new CException('Not implemented. System V queues does not support reserving messages.');
+		throw new NotSupportedException('Not implemented. System V queues does not support reserving messages.');
 	}
 
 	/**
 	 * @inheritdoc
+	 * @throws NotSupportedException
 	 */
 	public function release($message_id, $subscriber_id=null)
 	{
-		throw new CException('Not implemented. System V queues does not support reserving messages.');
+		throw new NotSupportedException('Not implemented. System V queues does not support reserving messages.');
 	}
 
 	/**
 	 * @inheritdoc
+	 * @throws NotSupportedException
 	 */
 	public function releaseTimedout()
 	{
-		throw new CException('Not implemented. System V queues does not support reserving messages.');
+		throw new NotSupportedException('Not implemented. System V queues does not support reserving messages.');
 	}
 
 	/**
 	 * @inheritdoc
+	 * @throws NotSupportedException
 	 */
 	public function subscribe($subscriber_id, $label=null, $categories=null, $exceptions=null)
 	{
-		throw new CException('Not implemented. System V queues does not support subscriptions.');
+		throw new NotSupportedException('Not implemented. System V queues does not support subscriptions.');
 	}
 
 	/**
 	 * @inheritdoc
+	 * @throws NotSupportedException
 	 */
 	public function unsubscribe($subscriber_id, $permanent=true)
 	{
-		throw new CException('Not implemented. System V queues does not support subscriptions.');
+		throw new NotSupportedException('Not implemented. System V queues does not support subscriptions.');
 	}
 
 	/**
 	 * @inheritdoc
+	 * @throws NotSupportedException
 	 */
 	public function isSubscribed($subscriber_id)
 	{
-		throw new CException('Not implemented. System V queues does not support subscriptions.');
+		throw new NotSupportedException('Not implemented. System V queues does not support subscriptions.');
 	}
 
 	/**
 	 * @inheritdoc
+	 * @throws NotSupportedException
 	 */
 	public function getSubscriptions($subscriber_id=null)
 	{
-		throw new CException('Not implemented. System V queues does not support subscriptions.');
+		throw new NotSupportedException('Not implemented. System V queues does not support subscriptions.');
 	}
 }
