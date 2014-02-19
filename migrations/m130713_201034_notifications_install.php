@@ -14,20 +14,6 @@ class m130713_201034_notifications_install extends \yii\db\Migration
 		$schema = $userClass::getDb()->schema;
 		$driver = $userClass::getDb()->driverName;
 
-		$this->createTable('{{%nfy_messages}}', array(
-			'id'			=> 'pk',
-			'queue_id'		=> 'string NOT NULL',
-			'created_on'	=> 'timestamp NOT NULL',
-			'sender_id'		=> $userPkType.' REFERENCES '.$schema->quoteTableName($userTable).' ('.$userPk[0].') ON DELETE CASCADE ON UPDATE CASCADE',
-			'message_id'	=> 'integer',
-			'subscription_id' => 'integer REFERENCES '.$schema->quoteTableName('{{nfy_subscriptions}}').' (id) ON DELETE CASCADE ON UPDATE CASCADE',
-			'status'		=> 'integer NOT NULL',
-			'timeout'		=> 'integer',
-			'reserved_on'	=> 'timestamp',
-			'deleted_on'	=> 'timestamp',
-			'mimetype'		=> 'string NOT NULL DEFAULT \'text/plain\'',
-			'body'			=> 'text',
-		));
 		$this->createTable('{{%nfy_subscriptions}}', array(
 			'id'		=> 'pk',
 			'queue_id'	=> 'string NOT NULL',
@@ -41,6 +27,20 @@ class m130713_201034_notifications_install extends \yii\db\Migration
 			'subscription_id'=>'integer NOT NULL REFERENCES '.$schema->quoteTableName('{{nfy_subscriptions}}').' (id) ON DELETE CASCADE ON UPDATE CASCADE',
 			'category'=>'string NOT NULL',
 			'is_exception'=>'boolean NOT NULL DEFAULT '.($driver==='sqlite' ? '0' : 'false'),
+		));
+		$this->createTable('{{%nfy_messages}}', array(
+			'id'			=> 'pk',
+			'queue_id'		=> 'string NOT NULL',
+			'created_on'	=> 'timestamp NOT NULL',
+			'sender_id'		=> $userPkType.' REFERENCES '.$schema->quoteTableName($userTable).' ('.$userPk[0].') ON DELETE CASCADE ON UPDATE CASCADE',
+			'message_id'	=> 'integer',
+			'subscription_id' => 'integer REFERENCES '.$schema->quoteTableName('{{nfy_subscriptions}}').' (id) ON DELETE CASCADE ON UPDATE CASCADE',
+			'status'		=> 'integer NOT NULL',
+			'timeout'		=> 'integer',
+			'reserved_on'	=> 'timestamp',
+			'deleted_on'	=> 'timestamp',
+			'mimetype'		=> 'string NOT NULL DEFAULT \'text/plain\'',
+			'body'			=> 'text',
 		));
 
 		$prefix = $this->db->tablePrefix;
@@ -62,9 +62,9 @@ class m130713_201034_notifications_install extends \yii\db\Migration
 
 	public function safeDown()
 	{
+		$this->dropTable('{{%nfy_messages}}');
 		$this->dropTable('{{%nfy_subscription_categories}}');
 		$this->dropTable('{{%nfy_subscriptions}}');
-		$this->dropTable('{{%nfy_messages}}');
 	}
 }
 
