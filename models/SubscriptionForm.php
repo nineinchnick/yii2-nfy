@@ -13,9 +13,9 @@ class SubscriptionForm extends Model
     public $label;
     public $categories;
     public $exceptions;
-    
-	public function rules()
-	{
+
+    public function rules()
+    {
         return [
             [['label', 'categories', 'exceptions'], 'filter', 'filter'=>'trim'],
             [['label', 'categories', 'exceptions'], 'default'],
@@ -23,23 +23,24 @@ class SubscriptionForm extends Model
         ];
     }
 
-	public function prepare($attribute, $params)
-	{
-		if ($this->$attribute === null)
-			return true;
+    public function prepare($attribute, $params)
+    {
+        if ($this->$attribute === null)
+            return true;
 
-		$values = array_map(function($v){return trim($v);}, explode(',',$this->$attribute));
-		if (!empty($values))
-			$this->$attribute = $values;
-		return true;
-	}
+        $values = array_map(function ($v) {return trim($v);}, explode(',',$this->$attribute));
+        if (!empty($values))
+            $this->$attribute = $values;
 
-	public function attributeLabels()
-	{
-		return [
-			'label' => Yii::t('app', 'Label'),
-			'categories' => Yii::t('app', 'Categories'),
-			'exceptions' => Yii::t('app', 'Exceptions'),
-		];
-	}
+        return true;
+    }
+
+    public function attributeLabels()
+    {
+        return [
+            'label' => Yii::t('app', 'Label'),
+            'categories' => Yii::t('app', 'Categories'),
+            'exceptions' => Yii::t('app', 'Exceptions'),
+        ];
+    }
 }

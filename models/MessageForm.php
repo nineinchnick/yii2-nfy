@@ -12,9 +12,9 @@ class MessageForm extends Model
 {
     public $content;
     public $category;
-    
-	public function rules()
-	{
+
+    public function rules()
+    {
         return [
             [['content', 'category'], 'filter', 'filter'=>'trim'],
             [['content', 'category'], 'default'],
@@ -22,11 +22,11 @@ class MessageForm extends Model
         ];
     }
 
-	public function attributeLabels()
-	{
-		return [
-			'content' => Yii::t('app', 'Message content'),
-			'category' => Yii::t('app', 'Message category'),
-		];
-	}
+    public function attributeLabels()
+    {
+        return [
+            'content' => Yii::t('app', 'Message content'),
+            'category' => Yii::t('app', 'Message category'),
+        ];
+    }
 }

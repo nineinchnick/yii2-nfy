@@ -23,10 +23,10 @@ $this->params['breadcrumbs'][] = $message->id;
     </div>
 </div>
 <div>
-<?php if ((int)$message->status === Message::AVAILABLE): ?>
-	<form method="post" action="<?php echo $this->context->createMessageUrl($queue_name, $message); ?>">
-		<?php echo Html::submitButton(Yii::t('app', 'Mark as read'), array('name'=>'delete')); ?>
-	</form>
+<?php if ((int) $message->status === Message::AVAILABLE): ?>
+    <form method="post" action="<?php echo $this->context->createMessageUrl($queue_name, $message); ?>">
+        <?php echo Html::submitButton(Yii::t('app', 'Mark as read'), array('name'=>'delete')); ?>
+    </form>
 <?php endif; ?>
     <?php echo Html::a(Html::encode(Yii::t('app', 'Back to messages list')), array('messages', 'queue_name'=>$queue_name, 'subscriber_id'=>$message->subscriber_id)); ?>
 </div>

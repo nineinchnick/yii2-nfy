@@ -1,6 +1,5 @@
 <?php
 
-use nineinchnick\nfy\components;
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 
@@ -13,23 +12,23 @@ use yii\widgets\ActiveForm;
 <div class="form">
 
 <?php $form = ActiveForm::begin([
-	'id'=>'message-form',
-	'enableAjaxValidation'=>false,
+    'id'=>'message-form',
+    'enableAjaxValidation'=>false,
 ]); ?>
-	<?php echo $form->errorSummary($model); ?>
+    <?php echo $form->errorSummary($model); ?>
 
-	<div class="row">
-		<div class="col-lg-5">
+    <div class="row">
+        <div class="col-lg-5">
 
-			<?php echo $form->field($model, 'category'); ?>
-			<?php echo $form->field($model, 'content')->textArea(['rows'=>6]); ?>
+            <?php echo $form->field($model, 'category'); ?>
+            <?php echo $form->field($model, 'content')->textArea(['rows'=>6]); ?>
 
-			<div class="form-group">
-				<?= Html::submitButton(Yii::t('app', 'Submit'), ['class' => 'btn btn-primary']) ?>
-			</div>
-		</div>
+            <div class="form-group">
+                <?= Html::submitButton(Yii::t('app', 'Submit'), ['class' => 'btn btn-primary']) ?>
+            </div>
+        </div>
 
-	</div>
+    </div>
 
 <?php ActiveForm::end(); ?>
 

@@ -16,24 +16,24 @@ $this->params['breadcrumbs'][] = $queue->label;
 <div class="form">
 
 <?php $form = ActiveForm::begin([
-	'id'=>'subscription-form',
-	'enableAjaxValidation'=>false,
+    'id'=>'subscription-form',
+    'enableAjaxValidation'=>false,
 ]); ?>
-	<?php echo $form->errorSummary($model); ?>
+    <?php echo $form->errorSummary($model); ?>
 
-	<div class="row">
-		<div class="col-lg-5">
+    <div class="row">
+        <div class="col-lg-5">
 
         <?php echo $form->field($model, 'label'); ?>
         <?php echo $form->field($model, 'categories'); ?>
         <?php echo $form->field($model, 'exceptions'); ?>
 
-			<div class="form-group">
-				<?= Html::submitButton(Yii::t('app', 'Submit'), ['class' => 'btn btn-primary']) ?>
-			</div>
-		</div>
+            <div class="form-group">
+                <?= Html::submitButton(Yii::t('app', 'Submit'), ['class' => 'btn btn-primary']) ?>
+            </div>
+        </div>
 
-	</div>
+    </div>
 
 <?php ActiveForm::end(); ?>
 

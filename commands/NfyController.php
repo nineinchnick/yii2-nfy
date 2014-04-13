@@ -18,13 +18,15 @@ class NfyController extends Controller
      * nfy.message.read
      *       |
      *       \-nfy.message.read.subscribed
-     * 
+     *
      * nfy.message.create
      *       |
      *       \-nfy.message.create.subscribed
      */
-    public function getTemplateAuthItems() {
+    public function getTemplateAuthItems()
+    {
         $bizRule = 'return !isset($params["queue"]) || $params["queue"]->isSubscribed($params["userId"]);';
+
         return array(
             array('name'=> 'nfy.queue.read',              'bizRule' => null, 'child' => null),
             array('name'=> 'nfy.queue.read.subscribed',   'bizRule' => $bizRule, 'child' => 'nfy.queue.read'),
@@ -53,69 +55,69 @@ class NfyController extends Controller
 
     public function actionCreateAuthItems()
     {
-		$auth = Yii::$app->authManager;
+        $auth = Yii::$app->authManager;
 
         $newAuthItems = array();
         $descriptions = $this->getTemplateAuthItemDescriptions();
-        foreach($this->getTemplateAuthItems() as $template) {
+        foreach ($this->getTemplateAuthItems() as $template) {
             $newAuthItems[$template['name']] = $template;
         }
-		$existingAuthItems = $auth->getItems(rbac\Item::TYPE_OPERATION);
-        foreach($existingAuthItems as $name=>$existingAuthItem) {
+        $existingAuthItems = $auth->getItems(rbac\Item::TYPE_OPERATION);
+        foreach ($existingAuthItems as $name=>$existingAuthItem) {
             if (isset($newAuthItems[$name]))
                 unset($newAuthItems[$name]);
         }
-        foreach($newAuthItems as $template) {
+        foreach ($newAuthItems as $template) {
             $auth->createItem($template['name'], rbac\Item::TYPE_OPERATION, $descriptions[$template['name']], $template['bizRule']);
             if (isset($template['child']) && $template['child'] !== null) {
                 $auth->addItemChild($template['name'], $template['child']);
             }
         }
-	}
+    }
 
     public function actionRemoveAuthItems()
     {
-		$auth = Yii::$app->authManager;
+        $auth = Yii::$app->authManager;
 
-        foreach($this->getTemplateAuthItems() as $template) {
+        foreach ($this->getTemplateAuthItems() as $template) {
             $auth->removeItem($template['name']);
         }
     }
 
-	/**
-	 * @param string $queue name of the queue component
-	 * @param string $message
-	 */
-	public function actionSend($queue, $message)
-	{
-		$q = Yii::$app->getComponent($queue);
-		if ($q === null) {
-			throw new CException('Queue not found.');
-		}
-		$q->send($message);
-	}
+    /**
+     * @param string $queue   name of the queue component
+     * @param string $message
+     */
+    public function actionSend($queue, $message)
+    {
+        $q = Yii::$app->getComponent($queue);
+        if ($q === null) {
+            throw new CException('Queue not found.');
+        }
+        $q->send($message);
+    }
 
-	/**
-	 * @param string $queue name of the queue component
-	 */
-	public function actionReceive($queue, $limit=-1)
-	{
-		$q = Yii::$app->getComponent($queue);
-		if ($q === null) {
-			throw new CException('Queue not found.');
-		}
-		var_dump($q->receive(null, $limit));
-	}
+    /**
+     * @param string $queue name of the queue component
+     */
+    public function actionReceive($queue, $limit=-1)
+    {
+        $q = Yii::$app->getComponent($queue);
+        if ($q === null) {
+            throw new CException('Queue not found.');
+        }
+        var_dump($q->receive(null, $limit));
+    }
 
-	/**
-	 * @param string $queue name of the queue component
-	 */
-	public function actionPeek($queue, $limit=-1)
-	{
-		$q = Yii::$app->getComponent($queue);
-		if ($q === null) {
-			throw new CException('Queue not found.');
-		}
-		var_dump($q->peek(null, $limit));
-	}
+    /**
+     * @param string $queue name of the queue component
+     */
+    public function actionPeek($queue, $limit=-1)
+    {
+        $q = Yii::$app->getComponent($queue);
+        if ($q === null) {
+            throw new CException('Queue not found.');
+        }
+        var_dump($q->peek(null, $limit));
+    }
 }

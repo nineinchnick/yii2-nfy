@@ -1,7 +1,5 @@
 <?php
 
-use yii\helpers\Html;
-
 /* @var yii\web\View $this */
 /* @var $dataProvider ArrayDataProvider */
 /* @var $queue QueueInterface */
@@ -20,8 +18,8 @@ $this->params['breadcrumbs'][] = $queue->label;
 <?php echo yii\widgets\ListView::widget([
     'dataProvider' => $dataProvider,
     'itemView'=>'_message_item',
-	'viewParams' => array('queue_name' => $queue_name),
-	'layout' => "{summary}\n{pager}\n{items}",
+    'viewParams' => array('queue_name' => $queue_name),
+    'layout' => "{summary}\n{pager}\n{items}",
     'pager' => array(
         'class' => 'yii\widgets\LinkPager',
         'prevPageLabel' => Yii::t('app', 'Newer'),

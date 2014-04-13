@@ -2,7 +2,6 @@
 
 use yii\helpers\Html;
 use nineinchnick\nfy\components;
-use nineinchnick\nfy\models;
 
 /* @var yii\web\View $this */
 /* @var $model components\Queue */

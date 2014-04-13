@@ -22,103 +22,107 @@ use nineinchnick\nfy\components;
  */
 class DbSubscription extends \yii\db\ActiveRecord
 {
-	/**
-	 * @inheritdoc
-	 */
-	public static function tableName()
-	{
-		return '{{%nfy_subscriptions}}';
-	}
+    /**
+     * @inheritdoc
+     */
+    public static function tableName()
+    {
+        return '{{%nfy_subscriptions}}';
+    }
 
-	public static function createQuery()
-	{
-		return new DbSubscriptionQuery(get_called_class());
-	}
+    public static function createQuery()
+    {
+        return new DbSubscriptionQuery(get_called_class());
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function rules()
-	{
-		return [
-			[['queue_id', 'subscriber_id'], 'required', 'except'=>'search'],
-			['subscriber_id', 'number', 'integerOnly'=>true],
-			['is_deleted', 'boolean'],
-			['label', 'safe'],
-		];
-	}
+    /**
+     * @inheritdoc
+     */
+    public function rules()
+    {
+        return [
+            [['queue_id', 'subscriber_id'], 'required', 'except'=>'search'],
+            ['subscriber_id', 'number', 'integerOnly'=>true],
+            ['is_deleted', 'boolean'],
+            ['label', 'safe'],
+        ];
+    }
 
-	public function getMessages()
-	{
-		return $this->hasMany(DbMessage::className(), ['id' => 'subscription_id']);
-	}
+    public function getMessages()
+    {
+        return $this->hasMany(DbMessage::className(), ['id' => 'subscription_id']);
+    }
 
-	public function getSubscriber()
-	{
-		$userClass = Yii::$app->getModule('nfy')->userClass;
-		return $this->hasOne($userClass, ['id' => 'subscriber_id'])->from($userClass::tableName().' subscriber');
-	}
+    public function getSubscriber()
+    {
+        $userClass = Yii::$app->getModule('nfy')->userClass;
 
-	public function getCategories()
-	{
-		return $this->hasMany(DbSubscriptionCategory::className(), ['subscription_id' => 'id']);
-	}
+        return $this->hasOne($userClass, ['id' => 'subscriber_id'])->from($userClass::tableName().' subscriber');
+    }
 
-	public function getMessagesCount()
-	{
-		return 0; //! @todo implement
-	}
+    public function getCategories()
+    {
+        return $this->hasMany(DbSubscriptionCategory::className(), ['subscription_id' => 'id']);
+    }
 
-	/**
-	 * @return array customized attribute labels (name=>label)
-	 */
-	public function attributeLabels()
-	{
-		return [
-			'id' => Yii::t('models', 'ID'),
-			'queue_id' => Yii::t('models', 'Queue ID'),
-			'label' => Yii::t('models', 'Label'),
-			'subscriber_id' => Yii::t('models', 'Subscriber ID'),
-			'created_on' => Yii::t('models', 'Created On'),
-			'is_deleted' => Yii::t('models', 'Is Deleted'),
-		];
-	}
+    public function getMessagesCount()
+    {
+        return 0; //! @todo implement
+    }
 
-	public function beforeSave($insert) {
-		if ($insert && $this->created_on === null) {
-			$now = new \DateTime('now', new \DateTimezone('UTC'));
-			$this->created_on = $now->format('Y-m-d H:i:s');
-		}
-		return parent::beforeSave($insert);
-	}
+    /**
+     * @return array customized attribute labels (name=>label)
+     */
+    public function attributeLabels()
+    {
+        return [
+            'id' => Yii::t('models', 'ID'),
+            'queue_id' => Yii::t('models', 'Queue ID'),
+            'label' => Yii::t('models', 'Label'),
+            'subscriber_id' => Yii::t('models', 'Subscriber ID'),
+            'created_on' => Yii::t('models', 'Created On'),
+            'is_deleted' => Yii::t('models', 'Is Deleted'),
+        ];
+    }
 
-	/**
-	 * Creates an array of Subscription objects from DbSubscription objects.
-	 * @param DbSubscription|array $dbSubscriptions one or more DbSubscription objects
-	 * @return array of Subscription objects
-	 */
-	public static function createSubscriptions($dbSubscriptions)
-	{
-		if (!is_array($dbSubscriptions)) {
-			$dbSubscriptions = [$dbSubscriptions];
-		}
-		$result = [];
-		foreach($dbSubscriptions as $dbSubscription) {
-			$attributes = $dbSubscription->getAttributes();
-			unset($attributes['id']);
-			unset($attributes['queue_id']);
-			unset($attributes['is_deleted']);
-			$subscription = new components\Subscription;
-			$subscription->setAttributes($attributes);
-			foreach($dbSubscription->categories as $category) {
-				if ($category->is_exception) {
-					$subscription->categories[] = $category->category;
-				} else {
-					$subscription->exceptions[] = $category->category;
-				}
-			}
-			$result[] = $subscription;
-		}
-		return $result;
-	}
+    public function beforeSave($insert)
+    {
+        if ($insert && $this->created_on === null) {
+            $now = new \DateTime('now', new \DateTimezone('UTC'));
+            $this->created_on = $now->format('Y-m-d H:i:s');
+        }
+
+        return parent::beforeSave($insert);
+    }
+
+    /**
+     * Creates an array of Subscription objects from DbSubscription objects.
+     * @param  DbSubscription|array $dbSubscriptions one or more DbSubscription objects
+     * @return array                of Subscription objects
+     */
+    public static function createSubscriptions($dbSubscriptions)
+    {
+        if (!is_array($dbSubscriptions)) {
+            $dbSubscriptions = [$dbSubscriptions];
+        }
+        $result = [];
+        foreach ($dbSubscriptions as $dbSubscription) {
+            $attributes = $dbSubscription->getAttributes();
+            unset($attributes['id']);
+            unset($attributes['queue_id']);
+            unset($attributes['is_deleted']);
+            $subscription = new components\Subscription;
+            $subscription->setAttributes($attributes);
+            foreach ($dbSubscription->categories as $category) {
+                if ($category->is_exception) {
+                    $subscription->categories[] = $category->category;
+                } else {
+                    $subscription->exceptions[] = $category->category;
+                }
+            }
+            $result[] = $subscription;
+        }
+
+        return $result;
+    }
 }
