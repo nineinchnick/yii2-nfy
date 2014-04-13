@@ -36,7 +36,7 @@ class RedisQueue extends Queue
     {
         parent::init();
         if (is_string($this->redis)) {
-            $this->redis = Yii::$app->getComponent($this->redis);
+            $this->redis = Yii::$app->get($this->redis);
         } elseif (is_array($this->redis)) {
         }
         if (!($this->redis instanceof yii\redis\Connection)) {

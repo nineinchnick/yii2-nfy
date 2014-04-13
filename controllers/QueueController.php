@@ -5,6 +5,7 @@ namespace nineinchnick\nfy\controllers;
 use Yii;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
+use yii\helpers\Url;
 use nineinchnick\nfy\components;
 use nineinchnick\nfy\models;
 
@@ -292,6 +293,6 @@ class QueueController extends \yii\web\Controller
 
     public function createMessageUrl($queue_name, components\Message $message)
     {
-        return $this->createUrl('message', ['queue_name' => $queue_name, 'subscriber_id' => $message->subscriber_id, 'message_id'=>$message->id]);
+        return Url::toRoute('message', ['queue_name' => $queue_name, 'subscriber_id' => $message->subscriber_id, 'message_id'=>$message->id]);
     }
 }

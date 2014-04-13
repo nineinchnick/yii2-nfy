@@ -4,6 +4,7 @@ namespace nineinchnick\nfy\widgets;
 
 use Yii;
 use yii\base\Widget;
+use yii\helpers\Url;
 
 class Messages extends Widget
 {
@@ -59,7 +60,7 @@ class Messages extends Widget
 
         $label = Yii::t('app', 'Mark all as read');
         //! @todo fix this
-        $deleteUrl = $this->view->context->createUrl('/nfy/message/mark');
+        $deleteUrl = Url::toRoute('/nfy/message/mark');
         $widgetId = $this->getId();
 
         $js = <<<JavaScript

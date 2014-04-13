@@ -30,7 +30,7 @@ class DbSubscription extends \yii\db\ActiveRecord
         return '{{%nfy_subscriptions}}';
     }
 
-    public static function createQuery()
+    public static function find()
     {
         return new DbSubscriptionQuery(get_called_class());
     }

@@ -36,7 +36,7 @@ class DbMessage extends \yii\db\ActiveRecord
         return '{{%nfy_messages}}';
     }
 
-    public static function createQuery()
+    public static function find()
     {
         return new DbMessageQuery(get_called_class());
     }
