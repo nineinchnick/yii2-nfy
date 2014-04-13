@@ -38,7 +38,7 @@ class DbMessage extends \yii\db\ActiveRecord
 
 	public static function createQuery()
 	{
-		return new DbMessageQuery(['modelClass' => get_called_class()]);
+		return new DbMessageQuery(get_called_class());
 	}
 
 	/**

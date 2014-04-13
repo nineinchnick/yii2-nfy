@@ -32,7 +32,7 @@ class DbSubscription extends \yii\db\ActiveRecord
 
 	public static function createQuery()
 	{
-		return new DbSubscriptionQuery(['modelClass' => get_called_class()]);
+		return new DbSubscriptionQuery(get_called_class());
 	}
 
 	/**
