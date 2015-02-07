@@ -32,7 +32,7 @@ class SysVQueue extends Queue
     public function init()
     {
         parent::init();
-        if (strlen($this->id)!==1) {
+        if (strlen($this->id) !== 1) {
             throw new InvalidConfigException(Yii::t('app', 'Queue id must be exactly a one character.'));
         }
     }
@@ -66,12 +66,12 @@ class SysVQueue extends Queue
     protected function createMessage($body)
     {
         $now = new \DateTime('now', new \DateTimezone('UTC'));
-        $message = new Message;
-        $message->setAttributes(array(
-            'created_on'	=> $now->format('Y-m-d H:i:s'),
-            'sender_id'		=> Yii::$app->hasComponent('user') ? Yii::$app->user->getId() : null,
-            'body'			=> $body,
-        ));
+        $message = new Message();
+        $message->setAttributes([
+            'created_on'    => $now->format('Y-m-d H:i:s'),
+            'sender_id'        => Yii::$app->hasComponent('user') ? Yii::$app->user->getId() : null,
+            'body'            => $body,
+        ]);
 
         return $this->formatMessage($message);
     }
@@ -89,21 +89,21 @@ class SysVQueue extends Queue
     /**
      * @inheritdoc
      */
-    public function send($message, $category=null)
+    public function send($message, $category = null)
     {
         $queueMessage = $this->createMessage($message);
 
         if ($this->beforeSend($queueMessage) !== true) {
-            Yii::log(Yii::t('app', "Not sending message '{msg}' to queue {queue_label}.", array('{msg}' => $queueMessage->body, '{queue_label}' => $this->label)), CLogger::LEVEL_INFO, 'nfy');
+            Yii::log(Yii::t('app', "Not sending message '{msg}' to queue {queue_label}.", ['{msg}' => $queueMessage->body, '{queue_label}' => $this->label]), CLogger::LEVEL_INFO, 'nfy');
 
             return;
         }
 
         $success = msg_send($this->getQueue(), 1, $queueMessage, true, false, $errorcode);
         if (!$success) {
-            Yii::log(Yii::t('app', "Failed to save message '{msg}' in queue {queue_label}.", array('{msg}' => $queueMessage->body, '{queue_label}' => $this->label)), CLogger::LEVEL_ERROR, 'nfy');
+            Yii::log(Yii::t('app', "Failed to save message '{msg}' in queue {queue_label}.", ['{msg}' => $queueMessage->body, '{queue_label}' => $this->label]), CLogger::LEVEL_ERROR, 'nfy');
             if ($errorcode === MSG_EAGAIN) {
-                Yii::log(Yii::t('app', "Queue {queue_label} is full.", array('{queue_label}' => $this->label)), CLogger::LEVEL_ERROR, 'nfy');
+                Yii::log(Yii::t('app', "Queue {queue_label} is full.", ['{queue_label}' => $this->label]), CLogger::LEVEL_ERROR, 'nfy');
             }
 
             return false;
@@ -111,14 +111,14 @@ class SysVQueue extends Queue
 
         $this->afterSend($queueMessage);
 
-        Yii::log(Yii::t('app', "Sent message '{msg}' to queue {queue_label}.", array('{msg}' => $queueMessage->body, '{queue_label}' => $this->label)), CLogger::LEVEL_INFO, 'nfy');
+        Yii::log(Yii::t('app', "Sent message '{msg}' to queue {queue_label}.", ['{msg}' => $queueMessage->body, '{queue_label}' => $this->label]), CLogger::LEVEL_INFO, 'nfy');
     }
 
     /**
      * @inheritdoc
      * @throws NotSupportedException
      */
-    public function peek($subscriber_id=null, $limit=-1, $status=Message::AVAILABLE)
+    public function peek($subscriber_id = null, $limit = -1, $status = Message::AVAILABLE)
     {
         throw new NotSupportedException('Not implemented. System V queues does not support peeking. Use the receive() method.');
     }
@@ -127,7 +127,7 @@ class SysVQueue extends Queue
      * @inheritdoc
      * @throws NotSupportedException
      */
-    public function reserve($subscriber_id=null, $limit=-1)
+    public function reserve($subscriber_id = null, $limit = -1)
     {
         throw new NotSupportedException('Not implemented. System V queues does not support reserving messages. Use the receive() method.');
     }
@@ -139,13 +139,13 @@ class SysVQueue extends Queue
      * @return array                 of Message objects
      * @throws NotSupportedException
      */
-    public function receive($subscriber_id=null, $limit=-1)
+    public function receive($subscriber_id = null, $limit = -1)
     {
         if ($subscriber_id !== null) {
             throw new NotSupportedException('Not implemented. System V queues does not support subscriptions.');
         }
         $flags = $this->blocking ? 0 : MSG_IPC_NOWAIT;
-        $messages = array();
+        $messages = [];
         $count = 0;
         while (($limit == -1 || $count < $limit) && (msg_receive($this->getQueue(), 0, $msgtype, self::MSG_MAXSIZE, $message, true, $flags, $errorcode))) {
             $message->subscriber_id = $subscriber_id;
@@ -161,7 +161,7 @@ class SysVQueue extends Queue
      * @inheritdoc
      * @throws NotSupportedException
      */
-    public function delete($message_id, $subscriber_id=null)
+    public function delete($message_id, $subscriber_id = null)
     {
         throw new NotSupportedException('Not implemented. System V queues does not support reserving messages.');
     }
@@ -170,7 +170,7 @@ class SysVQueue extends Queue
      * @inheritdoc
      * @throws NotSupportedException
      */
-    public function release($message_id, $subscriber_id=null)
+    public function release($message_id, $subscriber_id = null)
     {
         throw new NotSupportedException('Not implemented. System V queues does not support reserving messages.');
     }
@@ -188,7 +188,7 @@ class SysVQueue extends Queue
      * @inheritdoc
      * @throws NotSupportedException
      */
-    public function subscribe($subscriber_id, $label=null, $categories=null, $exceptions=null)
+    public function subscribe($subscriber_id, $label = null, $categories = null, $exceptions = null)
     {
         throw new NotSupportedException('Not implemented. System V queues does not support subscriptions.');
     }
@@ -197,7 +197,7 @@ class SysVQueue extends Queue
      * @inheritdoc
      * @throws NotSupportedException
      */
-    public function unsubscribe($subscriber_id, $permanent=true)
+    public function unsubscribe($subscriber_id, $permanent = true)
     {
         throw new NotSupportedException('Not implemented. System V queues does not support subscriptions.');
     }
@@ -215,7 +215,7 @@ class SysVQueue extends Queue
      * @inheritdoc
      * @throws NotSupportedException
      */
-    public function getSubscriptions($subscriber_id=null)
+    public function getSubscriptions($subscriber_id = null)
     {
         throw new NotSupportedException('Not implemented. System V queues does not support subscriptions.');
     }

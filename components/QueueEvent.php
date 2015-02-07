@@ -11,7 +11,6 @@ use yii\base\Event;
  */
 class QueueEvent extends Event
 {
-
     /**
      * @var \nineinchnick\nfy\components\Message queue message being send
      */

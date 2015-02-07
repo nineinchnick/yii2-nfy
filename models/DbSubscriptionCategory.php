@@ -29,8 +29,8 @@ class DbSubscriptionCategory extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['subscription_id', 'category', 'is_exception'], 'required', 'except'=>'search'],
-            ['subscription_id', 'number', 'integerOnly'=>true],
+            [['subscription_id', 'category', 'is_exception'], 'required', 'except' => 'search'],
+            ['subscription_id', 'number', 'integerOnly' => true],
             ['is_exception', 'boolean'],
         ];
     }

@@ -59,7 +59,7 @@ interface QueueInterface
      * @param mixed  $message  the actual format depends on the implementation
      * @param string $category category of the message (e.g. 'system.web'). It is case-insensitive.
      */
-    public function send($message, $category=null);
+    public function send($message, $category = null);
     /**
      * Gets messages from the queue, but neither reserves or removes them.
      * Messages are sorted by date and time of creation.
@@ -68,35 +68,35 @@ interface QueueInterface
      * @param  integer|array $status        allows peeking at reserved or removed messages (not yet permanently)
      * @return array         of NfyMessage objects
      */
-    public function peek($subscriber_id=null, $limit=-1, $status=NfyMessage::AVAILABLE);
+    public function peek($subscriber_id = null, $limit = -1, $status = NfyMessage::AVAILABLE);
     /**
      * Gets available messages from the queue and reserves them. Unless they are deleted, they will be released after a specific amount of time.
      * @param  mixed   $subscriber_id the actual format depends on the implementation
      * @param  integer $limit         number of available messages that will be fetched from the queue, defaults to -1 which means no limit
      * @return array   of NfyMessage objects
      */
-    public function reserve($subscriber_id=null, $limit=-1);
+    public function reserve($subscriber_id = null, $limit = -1);
     /**
      * Gets available messages from the queue and removes them from the queue.
      * @param  mixed   $subscriber_id the actual format depends on the implementation
      * @param  integer $limit         number of available messages that will be fetched from the queue, defaults to -1 which means no limit
      * @return array   of NfyMessage objects
      */
-    public function receive($subscriber_id=null, $limit=-1);
+    public function receive($subscriber_id = null, $limit = -1);
     /**
      * Deletes reserved messages from the queue.
      * @param  integer|array $message_id    one or many message ids
      * @param  mixed         $subscriber_id if not null, only this subscriber's messages will be affected, the actual format depends on the implementation
      * @return integer|array one or more ids of deleted message, some could have timed out and had been released automatically
      */
-    public function delete($message_id, $subscriber_id=null);
+    public function delete($message_id, $subscriber_id = null);
     /**
      * Releases reserved messages.
      * @param  integer|array $message_id    one or many message ids
      * @param  mixed         $subscriber_id if not null, only this subscriber's messages will be affected, the actual format depends on the implementation
      * @return integer|array one or more ids of released message, some could have timed out and had been released automatically
      */
-    public function release($message_id, $subscriber_id=null);
+    public function release($message_id, $subscriber_id = null);
     /**
      * Releases all timed-out reserved messages.
      * @return array of released message ids
@@ -110,7 +110,7 @@ interface QueueInterface
      * @param array  $categories    optional, list of categories of messages (e.g. 'system.web') that should be delivered to this subscription
      * @param array  $exceptions    optional, list of categories of messages (e.g. 'system.web') that should NOT be delivered to this subscription
      */
-    public function subscribe($subscriber_id, $label=null, $categories=null, $exceptions=null);
+    public function subscribe($subscriber_id, $label = null, $categories = null, $exceptions = null);
     /**
      * Unsubscribes a recipient from this queue.
      * @param mixed $subscriber_id the actual format depends on the implementation
@@ -127,5 +127,5 @@ interface QueueInterface
      * @param  mixed $subscriber_id
      * @return array of NfySubscription
      */
-    public function getSubscriptions($subscriber_id=null);
+    public function getSubscriptions($subscriber_id = null);
 }

@@ -9,15 +9,15 @@ use yii\widgets\ActiveForm;
 /* @var $model models\SubscriptionForm */
 /* @var ActiveForm $form */
 
-$this->params['breadcrumbs'][] = ['label'=>Yii::t('app', 'Queues'), 'url'=>['index']];
+$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'Queues'), 'url' => ['index']];
 $this->params['breadcrumbs'][] = $queue->label;
 ?>
 <h1><?php echo $queue->label; ?></h1>
 <div class="form">
 
 <?php $form = ActiveForm::begin([
-    'id'=>'subscription-form',
-    'enableAjaxValidation'=>false,
+    'id' => 'subscription-form',
+    'enableAjaxValidation' => false,
 ]); ?>
     <?php echo $form->errorSummary($model); ?>
 

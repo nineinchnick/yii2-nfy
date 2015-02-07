@@ -16,7 +16,7 @@ class MessageForm extends Model
     public function rules()
     {
         return [
-            [['content', 'category'], 'filter', 'filter'=>'trim'],
+            [['content', 'category'], 'filter', 'filter' => 'trim'],
             [['content', 'category'], 'default'],
             ['content', 'required'],
         ];

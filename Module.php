@@ -30,7 +30,7 @@ class Module extends \yii\base\Module
     /**
      * @var array list of queue application components that will be displayed in the index action of the default controller.
      */
-    public $queues = array();
+    public $queues = [];
 
     public function init()
     {
