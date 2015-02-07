@@ -5,6 +5,7 @@ namespace nineinchnick\nfy\commands;
 use Yii;
 use yii\console\Controller;
 use yii\rbac;
+use yii\web\NotFoundHttpException;
 
 class NfyController extends Controller
 {
@@ -93,7 +94,7 @@ class NfyController extends Controller
     {
         $q = Yii::$app->getComponent($queue);
         if ($q === null) {
-            throw new CException('Queue not found.');
+            throw new NotFoundHttpException('Queue not found.');
         }
         $q->send($message);
     }
@@ -105,7 +106,7 @@ class NfyController extends Controller
     {
         $q = Yii::$app->getComponent($queue);
         if ($q === null) {
-            throw new CException('Queue not found.');
+            throw new NotFoundHttpException('Queue not found.');
         }
         var_dump($q->receive(null, $limit));
     }
@@ -117,7 +118,7 @@ class NfyController extends Controller
     {
         $q = Yii::$app->getComponent($queue);
         if ($q === null) {
-            throw new CException('Queue not found.');
+            throw new NotFoundHttpException('Queue not found.');
         }
         var_dump($q->peek(null, $limit));
     }

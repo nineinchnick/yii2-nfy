@@ -291,7 +291,10 @@ class QueueController extends \yii\web\Controller
 
         $results = [];
         foreach ($messages as $message) {
-            $result = ['title' => $queue->label, 'body' => $message->body];
+            $result = [
+                'title' => $queue->label,
+                'body' => $message->body,
+            ];
             if ($soundUrl !== null) {
                 $result['sound'] = $soundUrl;
             }

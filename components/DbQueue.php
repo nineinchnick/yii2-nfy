@@ -36,7 +36,7 @@ class DbQueue extends Queue
         $message->setAttributes([
             'queue_id'  => $this->id,
             'timeout'   => $this->timeout,
-            'sender_id' => Yii::$app->hasComponent('user') ? Yii::$app->user->getId() : null,
+            'sender_id' => Yii::$app->has('user') ? Yii::$app->user->getId() : null,
             'status'    => Message::AVAILABLE,
             'body'      => $body,
         ], false);
@@ -318,16 +318,32 @@ class DbQueue extends Queue
      * @inheritdoc
      * @param boolean @permanent if false, the subscription will only be marked as removed and the messages will remain in the storage; if true, everything is removed permanently
      */
-    public function unsubscribe($subscriber_id, $permanent = true)
+    public function unsubscribe($subscriber_id, $categories = null, $permanent = true)
     {
         $trx = models\DbSubscription::getDb()->transaction !== null ? null : models\DbSubscription::getDb()->beginTransaction();
-        $subscription = models\DbSubscription::find()->withQueue($this->id)->withSubscriber($subscriber_id)->one();
+        $subscription = models\DbSubscription::find()
+            ->withQueue($this->id)
+            ->withSubscriber($subscriber_id)
+            ->matchingCategory($categories)
+            ->one();
         if ($subscription !== null) {
-            if ($permanent) {
-                $subscription->delete();
-            } else {
-                $subscription->is_deleted = 1;
-                $subscription->update(true, ['is_deleted']);
+            $canDelete = true;
+            if ($categories !== null) {
+                //! @todo port
+                // it may be a case when some (but not all) categories are about to be unsubscribed
+                // if that happens and this subscription ends up with some other categories, only given categories
+                // should be deleted, not the whole subscription
+                NfyDbSubscriptionCategory::model()->deleteByPk(array_map(function ($c) { return $c->id; }, $subscription->categories));
+                $canDelete = NfyDbSubscriptionCategory::model()->countByAttributes(['subscription_id' => $subscription->id]) <= 0;
+            }
+
+            if ($canDelete) {
+                if ($permanent) {
+                    $subscription->delete();
+                } else {
+                    $subscription->is_deleted = 1;
+                    $subscription->update(true, ['is_deleted']);
+                }
             }
         }
         if ($trx !== null) {
@@ -338,12 +354,13 @@ class DbQueue extends Queue
     /**
      * @inheritdoc
      */
-    public function isSubscribed($subscriber_id)
+    public function isSubscribed($subscriber_id, $category = null)
     {
         $subscription = models\DbSubscription::find()
             ->current()
             ->withQueue($this->id)
             ->withSubscriber($subscriber_id)
+            ->matchingCategory($category)
             ->one();
 
         return $subscription !== null;
@@ -356,7 +373,10 @@ class DbQueue extends Queue
     public function getSubscriptions($subscriber_id = null)
     {
         /** @var $query ActiveQuery */
-        $query = models\DbSubscription::find()->current()->withQueue($this->id)->with(['categories']);
+        $query = models\DbSubscription::find()
+            ->current()
+            ->withQueue($this->id)
+            ->with(['categories']);
         if ($subscriber_id !== null) {
             $dbSubscriptions = $query->andWhere('subscriber_id=:subscriber_id', [':subscriber_id' => $subscriber_id]);
         }

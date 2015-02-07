@@ -58,7 +58,7 @@ class RedisQueue extends Queue
             'id'         => $this->redis->incr($this->id.self::MESSAGE_ID),
             'status'     => Message::AVAILABLE,
             'created_on' => $now->format('Y-m-d H:i:s'),
-            'sender_id'  => Yii::$app->hasComponent('user') ? Yii::$app->user->getId() : null,
+            'sender_id'  => Yii::$app->has('user') ? Yii::$app->user->getId() : null,
             'body'       => $body,
         ]);
 
@@ -345,6 +345,7 @@ class RedisQueue extends Queue
      */
     public function unsubscribe($subscriber_id, $permanent = true)
     {
+        //! @todo doesn't match interface (missing $categories arg), backport to yii1
         if ($this->blocking) {
             $this->redis->punsubscribe();
             $this->redis->unsubscribe();

@@ -68,9 +68,9 @@ class SysVQueue extends Queue
         $now = new \DateTime('now', new \DateTimezone('UTC'));
         $message = new Message();
         $message->setAttributes([
-            'created_on'    => $now->format('Y-m-d H:i:s'),
-            'sender_id'        => Yii::$app->hasComponent('user') ? Yii::$app->user->getId() : null,
-            'body'            => $body,
+            'created_on' => $now->format('Y-m-d H:i:s'),
+            'sender_id'  => Yii::$app->has('user') ? Yii::$app->user->getId() : null,
+            'body'       => $body,
         ]);
 
         return $this->formatMessage($message);
@@ -94,16 +94,24 @@ class SysVQueue extends Queue
         $queueMessage = $this->createMessage($message);
 
         if ($this->beforeSend($queueMessage) !== true) {
-            Yii::log(Yii::t('app', "Not sending message '{msg}' to queue {queue_label}.", ['{msg}' => $queueMessage->body, '{queue_label}' => $this->label]), CLogger::LEVEL_INFO, 'nfy');
+            Yii::info(Yii::t('app', "Not sending message '{msg}' to queue {queue_label}.", [
+                '{msg}' => $queueMessage->body,
+                '{queue_label}' => $this->label
+            ]), 'nfy');
 
             return;
         }
 
         $success = msg_send($this->getQueue(), 1, $queueMessage, true, false, $errorcode);
         if (!$success) {
-            Yii::log(Yii::t('app', "Failed to save message '{msg}' in queue {queue_label}.", ['{msg}' => $queueMessage->body, '{queue_label}' => $this->label]), CLogger::LEVEL_ERROR, 'nfy');
+            Yii::error(Yii::t('app', "Failed to save message '{msg}' in queue {queue_label}.", [
+                '{msg}' => $queueMessage->body,
+                '{queue_label}' => $this->label,
+            ]), 'nfy');
             if ($errorcode === MSG_EAGAIN) {
-                Yii::log(Yii::t('app', "Queue {queue_label} is full.", ['{queue_label}' => $this->label]), CLogger::LEVEL_ERROR, 'nfy');
+                Yii::error(Yii::t('app', "Queue {queue_label} is full.", [
+                    '{queue_label}' => $this->label,
+                ]), 'nfy');
             }
 
             return false;
@@ -111,7 +119,10 @@ class SysVQueue extends Queue
 
         $this->afterSend($queueMessage);
 
-        Yii::log(Yii::t('app', "Sent message '{msg}' to queue {queue_label}.", ['{msg}' => $queueMessage->body, '{queue_label}' => $this->label]), CLogger::LEVEL_INFO, 'nfy');
+        Yii::info(Yii::t('app', "Sent message '{msg}' to queue {queue_label}.", [
+            '{msg}' => $queueMessage->body,
+            '{queue_label}' => $this->label,
+        ]), 'nfy');
     }
 
     /**
@@ -199,6 +210,7 @@ class SysVQueue extends Queue
      */
     public function unsubscribe($subscriber_id, $permanent = true)
     {
+        //! @todo method signature should match interface
         throw new NotSupportedException('Not implemented. System V queues does not support subscriptions.');
     }
 
