@@ -36,12 +36,7 @@ class Module extends \yii\base\Module
     {
         parent::init();
         \Yii::setAlias('@nfy', dirname(__FILE__));
-        \Yii::$app->i18n->translations['nfy'] = [
-            'class' => 'yii\i18n\PhpMessageSource',
-            'sourceLanguage' => 'en-US',
-            'basePath' => '@nfy/messages',
-        ];
-        \Yii::$app->i18n->translations['auth'] = [
+        \Yii::$app->i18n->translations['nfy'] = \Yii::$app->i18n->translations['auth'] = [
             'class' => 'yii\i18n\PhpMessageSource',
             'sourceLanguage' => 'en-US',
             'basePath' => '@nfy/messages',
