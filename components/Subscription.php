@@ -22,11 +22,11 @@ class Subscription
     /**
      * @var array $categories List of categories of messages (e.g. 'system.web') that should be delivered to this subscription
      */
-    public $categories = array();
+    public $categories = [];
     /**
      * @var array $exceptions List of categories of messages (e.g. 'system.web') that should NOT be delivered to this subscription
      */
-    public $exceptions = array();
+    public $exceptions = [];
 
     /**
      * Sets the properties values in a massive way.
@@ -34,11 +34,11 @@ class Subscription
      */
     public function setAttributes($values)
     {
-        if(!is_array($values))
-
+        if (!is_array($values)) {
             return;
-        foreach ($values as $name=>$value) {
-            $this->$name=$value;
+        }
+        foreach ($values as $name => $value) {
+            $this->$name = $value;
         }
     }
 
@@ -52,12 +52,14 @@ class Subscription
     {
         $result = empty($this->categories);
         foreach ($this->categories as $allowedCategory) {
-            if ($this->categoryContains($allowedCategory, $category))
+            if ($this->categoryContains($allowedCategory, $category)) {
                 $result = true;
+            }
         }
         foreach ($this->exceptions as $deniedCategory) {
-            if ($this->categoryContains($deniedCategory, $category))
+            if ($this->categoryContains($deniedCategory, $category)) {
                 $result = false;
+            }
         }
 
         return $result;
@@ -70,10 +72,11 @@ class Subscription
      */
     private function categoryContains($container, $category)
     {
-        if (($c=rtrim($container,'*'))!==$container) {
-            if (($c2=rtrim($c,'.'))!==$c) {
-                if ($c2 == $category || strpos($category, $c2.'.') === 0)
+        if (($c = rtrim($container, '*')) !== $container) {
+            if (($c2 = rtrim($c, '.')) !== $c) {
+                if ($c2 == $category || strpos($category, $c2.'.') === 0) {
                     $result = true;
+                }
             } elseif (strpos($category, $c) === 0) {
                 $result = true;
             }

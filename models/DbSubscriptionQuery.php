@@ -22,7 +22,7 @@ class DbSubscriptionQuery extends \yii\db\ActiveQuery
     public function withQueue($queue_id)
     {
         $modelClass = $this->modelClass;
-        $this->andWhere($modelClass::tableName().'.queue_id=:queue_id', [':queue_id'=>$queue_id]);
+        $this->andWhere($modelClass::tableName().'.queue_id=:queue_id', [':queue_id' => $queue_id]);
 
         return $this;
     }
@@ -34,7 +34,7 @@ class DbSubscriptionQuery extends \yii\db\ActiveQuery
     public function withSubscriber($subscriber_id)
     {
         $modelClass = $this->modelClass;
-        $this->andWhere($modelClass::tableName().'.subscriber_id=:subscriber_id', [':subscriber_id'=>$subscriber_id]);
+        $this->andWhere($modelClass::tableName().'.subscriber_id=:subscriber_id', [':subscriber_id' => $subscriber_id]);
 
         return $this;
     }
@@ -45,14 +45,16 @@ class DbSubscriptionQuery extends \yii\db\ActiveQuery
      */
     public function matchingCategory($categories)
     {
-        if ($categories===null)
+        if ($categories === null) {
             return $this;
+        }
         $modelClass = $this->modelClass;
         $t = $modelClass::tableName();
         $r = DbSubscriptionCategory::tableName();
 
-        if (!is_array($categories))
+        if (!is_array($categories)) {
             $categories = [$categories];
+        }
 
         $this->innerJoinWith('categories');
 

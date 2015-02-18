@@ -32,14 +32,14 @@ class DbQueue extends Queue
      */
     protected function createMessage($body)
     {
-        $message = new models\DbMessage;
-        $message->setAttributes(array(
-            'queue_id'		=> $this->id,
-            'timeout'		=> $this->timeout,
-            'sender_id'		=> Yii::$app->hasComponent('user') ? Yii::$app->user->getId() : null,
-            'status'		=> Message::AVAILABLE,
-            'body'			=> $body,
-        ), false);
+        $message = new models\DbMessage();
+        $message->setAttributes([
+            'queue_id'  => $this->id,
+            'timeout'   => $this->timeout,
+            'sender_id' => Yii::$app->has('user') ? Yii::$app->user->getId() : null,
+            'status'    => Message::AVAILABLE,
+            'body'      => $body,
+        ], false);
 
         return $this->formatMessage($message);
     }
@@ -57,12 +57,15 @@ class DbQueue extends Queue
     /**
      * @inheritdoc
      */
-    public function send($message, $category=null)
+    public function send($message, $category = null)
     {
         $queueMessage = $this->createMessage($message);
 
         if ($this->beforeSend($queueMessage) !== true) {
-            Yii::info(Yii::t('app', "Not sending message '{msg}' to queue {queue_label}.", array('{msg}' => $queueMessage->body, '{queue_label}' => $this->label)), 'nfy');
+            Yii::info(Yii::t('app', "Not sending message '{msg}' to queue {queue_label}.", [
+                '{msg}' => $queueMessage->body,
+                '{queue_label}' => $this->label,
+            ]), 'nfy');
 
             return;
         }
@@ -75,7 +78,10 @@ class DbQueue extends Queue
 
         // empty($subscriptions) &&
         if (!$queueMessage->save()) {
-            Yii::error(Yii::t('app', "Failed to save message '{msg}' in queue {queue_label}.", array('{msg}' => $queueMessage->body, '{queue_label}' => $this->label)), 'nfy');
+            Yii::error(Yii::t('app', "Failed to save message '{msg}' in queue {queue_label}.", [
+                '{msg}' => $queueMessage->body,
+                '{queue_label}' => $this->label,
+            ]), 'nfy');
 
             return false;
         }
@@ -89,11 +95,11 @@ class DbQueue extends Queue
             }
 
             if (!$subscriptionMessage->save()) {
-                Yii::error(Yii::t('app', "Failed to save message '{msg}' in queue {queue_label} for the subscription {subscription_id}.", array(
-                    '{msg}' => $queueMessage->body,
-                    '{queue_label}' => $this->label,
+                Yii::error(Yii::t('app', "Failed to save message '{msg}' in queue {queue_label} for the subscription {subscription_id}.", [
+                    '{msg}'             => $queueMessage->body,
+                    '{queue_label}'     => $this->label,
                     '{subscription_id}' => $subscription->id,
-                )), 'nfy');
+                ]), 'nfy');
                 $success = false;
             }
 
@@ -106,7 +112,10 @@ class DbQueue extends Queue
             $trx->commit();
         }
 
-        Yii::info(Yii::t('app', "Sent message '{msg}' to queue {queue_label}.", array('{msg}' => $queueMessage->body, '{queue_label}' => $this->label)), 'nfy');
+        Yii::info(Yii::t('app', "Sent message '{msg}' to queue {queue_label}.", [
+            '{msg}' => $queueMessage->body,
+            '{queue_label}' => $this->label,
+        ]), 'nfy');
 
         return $success;
     }
@@ -114,10 +123,16 @@ class DbQueue extends Queue
     /**
      * @inheritdoc
      */
-    public function peek($subscriber_id=null, $limit=-1, $status=Message::AVAILABLE)
+    public function peek($subscriber_id = null, $limit = -1, $status = Message::AVAILABLE)
     {
         $pk = models\DbMessage::primaryKey();
-        $messages = models\DbMessage::find()->withQueue($this->id)->withSubscriber($subscriber_id)->withStatus($status, $this->timeout)->limit($limit)->indexBy($pk[0])->all();
+        $messages = models\DbMessage::find()
+            ->withQueue($this->id)
+            ->withSubscriber($subscriber_id)
+            ->withStatus($status, $this->timeout)
+            ->limit($limit)
+            ->indexBy($pk[0])
+            ->all();
 
         return models\DbMessage::createMessages($messages);
     }
@@ -125,7 +140,7 @@ class DbQueue extends Queue
     /**
      * @inheritdoc
      */
-    public function reserve($subscriber_id=null, $limit=-1)
+    public function reserve($subscriber_id = null, $limit = -1)
     {
         return $this->receiveInternal($subscriber_id, $limit, self::GET_RESERVE);
     }
@@ -133,7 +148,7 @@ class DbQueue extends Queue
     /**
      * @inheritdoc
      */
-    public function receive($subscriber_id=null, $limit=-1)
+    public function receive($subscriber_id = null, $limit = -1)
     {
         return $this->receiveInternal($subscriber_id, $limit, self::GET_DELETE);
     }
@@ -141,17 +156,23 @@ class DbQueue extends Queue
     /**
      * Perform message extraction.
      */
-    protected function receiveInternal($subscriber_id=null, $limit=-1, $mode=self::GET_RESERVE)
+    protected function receiveInternal($subscriber_id = null, $limit = -1, $mode = self::GET_RESERVE)
     {
         $pk = models\DbMessage::primaryKey();
         $trx = models\DbMessage::getDb()->transaction !== null ? null : models\DbMessage::getDb()->beginTransaction();
-        $messages = models\DbMessage::find()->withQueue($this->id)->withSubscriber($subscriber_id)->available($this->timeout)->limit($limit)->indexBy($pk[0])->all();
+        $messages = models\DbMessage::find()
+            ->withQueue($this->id)
+            ->withSubscriber($subscriber_id)
+            ->available($this->timeout)
+            ->limit($limit)
+            ->indexBy($pk[0])
+            ->all();
         if (!empty($messages)) {
             $now = new \DateTime('now', new \DateTimezone('UTC'));
             if ($mode === self::GET_DELETE) {
-                $attributes = array('status'=>Message::DELETED, 'deleted_on'=>$now->format('Y-m-d H:i:s'));
+                $attributes = ['status' => Message::DELETED, 'deleted_on' => $now->format('Y-m-d H:i:s')];
             } elseif ($mode === self::GET_RESERVE) {
-                $attributes = array('status'=>Message::RESERVED, 'reserved_on'=>$now->format('Y-m-d H:i:s'));
+                $attributes = ['status' => Message::RESERVED, 'reserved_on' => $now->format('Y-m-d H:i:s')];
             }
             models\DbMessage::updateAll($attributes, ['in', models\DbMessage::primaryKey(), array_keys($messages)]);
         }
@@ -165,13 +186,22 @@ class DbQueue extends Queue
     /**
      * @inheritdoc
      */
-    public function delete($message_id, $subscriber_id=null)
+    public function delete($message_id, $subscriber_id = null)
     {
         $trx = models\DbMessage::getDb()->transaction !== null ? null : models\DbMessage::getDb()->beginTransaction();
         $pk = models\DbMessage::primaryKey();
-        $message_ids = models\DbMessage::find()->withQueue($this->id)->withSubscriber($subscriber_id)->reserved($this->timeout)->select($pk)->andWhere(['in',$pk,$message_id])->column();
+        $message_ids = models\DbMessage::find()
+            ->withQueue($this->id)
+            ->withSubscriber($subscriber_id)
+            ->reserved($this->timeout)
+            ->select($pk)
+            ->andWhere(['in', $pk, $message_id])
+            ->column();
         $now = new \DateTime('now', new \DateTimezone('UTC'));
-        models\DbMessage::updateAll(array('status'=>Message::DELETED, 'deleted_on'=>$now->format('Y-m-d H:i:s')), ['in', $pk, $message_ids]);
+        models\DbMessage::updateAll([
+            'status' => Message::DELETED,
+            'deleted_on' => $now->format('Y-m-d H:i:s'),
+        ], ['in', $pk, $message_ids]);
         if ($trx !== null) {
             $trx->commit();
         }
@@ -182,12 +212,18 @@ class DbQueue extends Queue
     /**
      * @inheritdoc
      */
-    public function release($message_id, $subscriber_id=null)
+    public function release($message_id, $subscriber_id = null)
     {
         $trx = models\DbMessage::getDb()->transaction !== null ? null : models\DbMessage::getDb()->beginTransaction();
         $pk = models\DbMessage::primaryKey();
-        $message_ids = models\DbMessage::find()->withQueue($this->id)->withSubscriber($subscriber_id)->reserved($this->timeout)->select($pk)->andWhere(['in',$pk,$message_id])->column();
-        models\DbMessage::updateAll(array('status'=>Message::AVAILABLE), ['in', $pk, $message_ids]);
+        $message_ids = models\DbMessage::find()
+            ->withQueue($this->id)
+            ->withSubscriber($subscriber_id)
+            ->reserved($this->timeout)
+            ->select($pk)
+            ->andWhere(['in', $pk, $message_id])
+            ->column();
+        models\DbMessage::updateAll(['status' => Message::AVAILABLE], ['in', $pk, $message_ids]);
         if ($trx !== null) {
             $trx->commit();
         }
@@ -203,8 +239,13 @@ class DbQueue extends Queue
     {
         $trx = models\DbMessage::getDb()->transaction !== null ? null : models\DbMessage::getDb()->beginTransaction();
         $pk = models\DbMessage::primaryKey();
-        $message_ids = models\DbMessage::find()->withQueue($this->id)->timedout($this->timeout)->select($pk)->andWhere(['in',$pk,$message_id])->column();
-        models\DbMessage::updateAll(array('status'=>Message::AVAILABLE), ['in', $pk, $message_ids]);
+        $message_ids = models\DbMessage::find(
+        )->withQueue($this->id)
+        ->timedout($this->timeout)
+        ->select($pk)
+        ->andWhere(['in', $pk, $message_id])
+        ->column();
+        models\DbMessage::updateAll(['status' => Message::AVAILABLE], ['in', $pk, $message_ids]);
         if ($trx !== null) {
             $trx->commit();
         }
@@ -215,23 +256,29 @@ class DbQueue extends Queue
     /**
      * @inheritdoc
      */
-    public function subscribe($subscriber_id, $label=null, $categories=null, $exceptions=null)
+    public function subscribe($subscriber_id, $label = null, $categories = null, $exceptions = null)
     {
         $trx = models\DbSubscription::getDb()->transaction !== null ? null : models\DbSubscription::getDb()->beginTransaction();
         $subscription = models\DbSubscription::find()->withQueue($this->id)->withSubscriber($subscriber_id)->one();
         if ($subscription === null) {
-            $subscription = new models\DbSubscription;
-            $subscription->setAttributes(array(
-                'queue_id' => $this->id,
+            $subscription = new models\DbSubscription();
+            $subscription->setAttributes([
+                'queue_id'      => $this->id,
                 'subscriber_id' => $subscriber_id,
-                'label' => $label,
-            ));
+                'label'         => $label,
+            ]);
         } else {
             $subscription->is_deleted = 0;
-            models\DbSubscriptionCategory::deleteAll('subscription_id=:subscription_id', [':subscription_id'=>$subscription->primaryKey]);
+            models\DbSubscriptionCategory::deleteAll('subscription_id=:subscription_id', [
+                ':subscription_id' => $subscription->primaryKey,
+            ]);
         }
-        if (!$subscription->save())
-            throw new Exception(Yii::t('app', 'Failed to subscribe {subscriber_id} to {queue_label}', array('{subscriber_id}'=>$subscriber_id, '{queue_label}'=>$this->label)));
+        if (!$subscription->save()) {
+            throw new Exception(Yii::t('app', 'Failed to subscribe {subscriber_id} to {queue_label}', [
+                '{subscriber_id}' => $subscriber_id,
+                '{queue_label}'   => $this->label,
+            ]));
+        }
         $this->saveSubscriptionCategories($categories, $subscription->primaryKey, false);
         $this->saveSubscriptionCategories($exceptions, $subscription->primaryKey, true);
         if ($trx !== null) {
@@ -241,21 +288,27 @@ class DbQueue extends Queue
         return true;
     }
 
-    protected function saveSubscriptionCategories($categories, $subscription_id, $are_exceptions=false)
+    protected function saveSubscriptionCategories($categories, $subscription_id, $are_exceptions = false)
     {
-        if ($categories === null)
+        if ($categories === null) {
             return true;
-        if (!is_array($categories))
-            $categories = array($categories);
+        }
+        if (!is_array($categories)) {
+            $categories = [$categories];
+        }
         foreach ($categories as $category) {
-            $subscriptionCategory = new models\DbSubscriptionCategory;
-            $subscriptionCategory->setAttributes(array(
-                'subscription_id'	=> $subscription_id,
-                'category'			=> str_replace('*', '%', $category),
-                'is_exception'		=> $are_exceptions ? 1 : 0,
-            ));
-            if (!$subscriptionCategory->save())
-                throw new Exception(Yii::t('app', 'Failed to save category {category} for subscription {subscription_id}', array('{category}'=>$category, '{subscription_id}'=>$subscription_id)));
+            $subscriptionCategory = new models\DbSubscriptionCategory();
+            $subscriptionCategory->setAttributes([
+                'subscription_id' => $subscription_id,
+                'category'        => str_replace('*', '%', $category),
+                'is_exception'    => $are_exceptions ? 1 : 0,
+            ]);
+            if (!$subscriptionCategory->save()) {
+                throw new Exception(Yii::t('app', 'Failed to save category {category} for subscription {subscription_id}', [
+                    '{category}' => $category,
+                    '{subscription_id}' => $subscription_id,
+                ]));
+            }
         }
 
         return true;
@@ -265,16 +318,32 @@ class DbQueue extends Queue
      * @inheritdoc
      * @param boolean @permanent if false, the subscription will only be marked as removed and the messages will remain in the storage; if true, everything is removed permanently
      */
-    public function unsubscribe($subscriber_id, $permanent=true)
+    public function unsubscribe($subscriber_id, $categories = null, $permanent = true)
     {
         $trx = models\DbSubscription::getDb()->transaction !== null ? null : models\DbSubscription::getDb()->beginTransaction();
-        $subscription = models\DbSubscription::find()->withQueue($this->id)->withSubscriber($subscriber_id)->one();
+        $subscription = models\DbSubscription::find()
+            ->withQueue($this->id)
+            ->withSubscriber($subscriber_id)
+            ->matchingCategory($categories)
+            ->one();
         if ($subscription !== null) {
-            if ($permanent) {
-                $subscription->delete();
-            } else {
-                $subscription->is_deleted = 1;
-                $subscription->update(true, ['is_deleted']);
+            $canDelete = true;
+            if ($categories !== null) {
+                //! @todo port
+                // it may be a case when some (but not all) categories are about to be unsubscribed
+                // if that happens and this subscription ends up with some other categories, only given categories
+                // should be deleted, not the whole subscription
+                NfyDbSubscriptionCategory::model()->deleteByPk(array_map(function ($c) { return $c->id; }, $subscription->categories));
+                $canDelete = NfyDbSubscriptionCategory::model()->countByAttributes(['subscription_id' => $subscription->id]) <= 0;
+            }
+
+            if ($canDelete) {
+                if ($permanent) {
+                    $subscription->delete();
+                } else {
+                    $subscription->is_deleted = 1;
+                    $subscription->update(true, ['is_deleted']);
+                }
             }
         }
         if ($trx !== null) {
@@ -285,9 +354,14 @@ class DbQueue extends Queue
     /**
      * @inheritdoc
      */
-    public function isSubscribed($subscriber_id)
+    public function isSubscribed($subscriber_id, $category = null)
     {
-        $subscription = models\DbSubscription::find()->current()->withQueue($this->id)->withSubscriber($subscriber_id)->one();
+        $subscription = models\DbSubscription::find()
+            ->current()
+            ->withQueue($this->id)
+            ->withSubscriber($subscriber_id)
+            ->matchingCategory($category)
+            ->one();
 
         return $subscription !== null;
     }
@@ -296,12 +370,15 @@ class DbQueue extends Queue
      * @param  mixed                       $subscriber_id
      * @return array|models\DbSubscription
      */
-    public function getSubscriptions($subscriber_id=null)
+    public function getSubscriptions($subscriber_id = null)
     {
         /** @var $query ActiveQuery */
-        $query = models\DbSubscription::find()->current()->withQueue($this->id)->with(['categories']);
-        if ($subscriber_id!==null) {
-            $dbSubscriptions = $query->andWhere('subscriber_id=:subscriber_id', [':subscriber_id'=>$subscriber_id]);
+        $query = models\DbSubscription::find()
+            ->current()
+            ->withQueue($this->id)
+            ->with(['categories']);
+        if ($subscriber_id !== null) {
+            $dbSubscriptions = $query->andWhere('subscriber_id=:subscriber_id', [':subscriber_id' => $subscriber_id]);
         }
         $dbSubscriptions = $query->all();
 
@@ -316,7 +393,12 @@ class DbQueue extends Queue
     {
         $trx = models\DbMessage::getDb()->transaction !== null ? null : models\DbMessage::getDb()->beginTransaction();
         $pk = models\DbMessage::primaryKey();
-        $message_ids = models\DbMessage::find()->withQueue($this->id)->deleted()->select($pk)->andWhere(['in', $pk, $message_id])->column();
+        $message_ids = models\DbMessage::find()
+            ->withQueue($this->id)
+            ->deleted()
+            ->select($pk)
+            ->andWhere(['in', $pk, $message_id])
+            ->column();
         models\DbMessage::deleteAll(['in', $pk, $message_ids]);
         if ($trx !== null) {
             $trx->commit();

@@ -47,11 +47,11 @@ class DbMessage extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['queue_id', 'sender_id', 'body'], 'required', 'except'=>'search'],
-            [['sender_id', 'subscription_id', 'timeout'], 'number', 'integerOnly'=>true],
-            [['message_id', 'subscription_id', 'timeout'], 'number', 'integerOnly'=>true, 'on'=>'search'],
-            ['status', 'number', 'integerOnly'=>true, 'on'=>'search'],
-            ['mimetype', 'safe', 'on'=>'search'],
+            [['queue_id', 'sender_id', 'body'], 'required', 'except' => 'search'],
+            [['sender_id', 'subscription_id', 'timeout'], 'number', 'integerOnly' => true],
+            [['message_id', 'subscription_id', 'timeout'], 'number', 'integerOnly' => true, 'on' => 'search'],
+            ['status', 'number', 'integerOnly' => true, 'on' => 'search'],
+            ['mimetype', 'safe', 'on' => 'search'],
         ];
     }
 
@@ -133,7 +133,7 @@ class DbMessage extends \yii\db\ActiveRecord
             unset($attributes['queue_id']);
             unset($attributes['subscription_id']);
             unset($attributes['mimetype']);
-            $message = new components\Message;
+            $message = new components\Message();
             $message->setAttributes($attributes);
             $result[] = $message;
         }

@@ -31,7 +31,7 @@ abstract class Queue extends \yii\base\Component implements QueueInterface
      */
     public function beforeSend($message)
     {
-        $event = new QueueEvent(['message'=>$message]);
+        $event = new QueueEvent(['message' => $message]);
         $this->trigger(self::EVENT_BEFORE_SEND, $event);
 
         return $event->isValid;
@@ -41,14 +41,14 @@ abstract class Queue extends \yii\base\Component implements QueueInterface
      */
     public function afterSend($message)
     {
-        $this->trigger(self::EVENT_AFTER_SEND, new QueueEvent(['message'=>$message]));
+        $this->trigger(self::EVENT_AFTER_SEND, new QueueEvent(['message' => $message]));
     }
     /**
      * @inheritdoc
      */
     public function beforeSendSubscription($message, $subscriber_id)
     {
-        $event = new QueueEvent(['message'=>$message, 'subscriber_id'=>$subscriber_id]);
+        $event = new QueueEvent(['message' => $message, 'subscriber_id' => $subscriber_id]);
         $this->trigger(self::EVENT_BEFORE_SEND_SUBSCRIPTION, $event);
 
         return $event->isValid;
@@ -58,6 +58,6 @@ abstract class Queue extends \yii\base\Component implements QueueInterface
      */
     public function afterSendSubscription($message, $subscriber_id)
     {
-        $this->trigger(self::EVENT_AFTER_SEND_SUBSCRIPTION, new QueueEvent(['message'=>$message, 'subscriber_id'=>$subscriber_id]));
+        $this->trigger(self::EVENT_AFTER_SEND_SUBSCRIPTION, new QueueEvent(['message' => $message, 'subscriber_id' => $subscriber_id]));
     }
 }

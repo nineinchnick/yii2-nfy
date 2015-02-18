@@ -16,7 +16,7 @@ $this->params['breadcrumbs'][] = $this->title;
 <?php echo yii\widgets\ListView::widget([
     'dataProvider' => new yii\data\ArrayDataProvider([
         'allModels' => $queues,
-        'key'=>function ($q) {return $q->id;},
+        'key' => function ($q) {return $q->id;},
         'pagination' => false,
         'sort' => ['attributes' => ['label']],
     ]),

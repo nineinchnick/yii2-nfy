@@ -41,8 +41,8 @@ class DbSubscription extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['queue_id', 'subscriber_id'], 'required', 'except'=>'search'],
-            ['subscriber_id', 'number', 'integerOnly'=>true],
+            [['queue_id', 'subscriber_id'], 'required', 'except' => 'search'],
+            ['subscriber_id', 'number', 'integerOnly' => true],
             ['is_deleted', 'boolean'],
             ['label', 'safe'],
         ];
@@ -111,7 +111,7 @@ class DbSubscription extends \yii\db\ActiveRecord
             unset($attributes['id']);
             unset($attributes['queue_id']);
             unset($attributes['is_deleted']);
-            $subscription = new components\Subscription;
+            $subscription = new components\Subscription();
             $subscription->setAttributes($attributes);
             foreach ($dbSubscription->categories as $category) {
                 if ($category->is_exception) {

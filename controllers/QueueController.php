@@ -44,11 +44,13 @@ class QueueController extends \yii\web\Controller
         foreach ($this->module->queues as $queueId) {
             /** @var Queue */
             $queue = Yii::$app->getComponent($queueId);
-            if (!($queue instanceof components\QueueInterface) || ($subscribedOnly && !$queue->isSubscribed($user->getId()))) continue;
+            if (!($queue instanceof components\QueueInterface) || ($subscribedOnly && !$queue->isSubscribed($user->getId()))) {
+                continue;
+            }
             $queues[$queueId] = $queue;
         }
 
-        return $this->render('index', ['queues'=>$queues, 'subscribedOnly' => $subscribedOnly]);
+        return $this->render('index', ['queues' => $queues, 'subscribedOnly' => $subscribedOnly]);
     }
 
     /**
@@ -59,9 +61,9 @@ class QueueController extends \yii\web\Controller
     {
         list($queue, $authItems) = $this->loadQueue($queue_name, ['nfy.queue.subscribe']);
 
-        $formModel = new models\SubscriptionForm;
+        $formModel = new models\SubscriptionForm();
         if (isset($_POST['SubscriptionForm'])) {
-            $formModel->attributes=$_POST['SubscriptionForm'];
+            $formModel->attributes = $_POST['SubscriptionForm'];
             if ($formModel->validate()) {
                 $queue->subscribe(Yii::$app->user->getId(), $formModel->label, $formModel->categories, $formModel->exceptions);
 
@@ -89,20 +91,21 @@ class QueueController extends \yii\web\Controller
      * @param string $queue_name
      * @param string $subscriber_id
      */
-    public function actionMessages($queue_name, $subscriber_id=null)
+    public function actionMessages($queue_name, $subscriber_id = null)
     {
-        if (($subscriber_id=trim($subscriber_id))==='')
+        if (($subscriber_id = trim($subscriber_id)) === '') {
             $subscriber_id = null;
+        }
         list($queue, $authItems) = $this->loadQueue($queue_name, ['nfy.message.read', 'nfy.message.create']);
         $this->verifySubscriber($queue, $subscriber_id);
 
-        $formModel = new models\MessageForm;
+        $formModel = new models\MessageForm();
         if ($authItems['nfy.message.create'] && isset($_POST['MessageForm'])) {
-            $formModel->attributes=$_POST['MessageForm'];
+            $formModel->attributes = $_POST['MessageForm'];
             if ($formModel->validate()) {
                 $queue->send($formModel->content, $formModel->category);
 
-                return $this->redirect(['messages', 'queue_name'=>$queue_name, 'subscriber_id'=>$subscriber_id]);
+                return $this->redirect(['messages', 'queue_name' => $queue_name, 'subscriber_id' => $subscriber_id]);
             }
         }
 
@@ -110,7 +113,7 @@ class QueueController extends \yii\web\Controller
         if ($authItems['nfy.message.read']) {
             $dataProvider = new \yii\data\ArrayDataProvider([
                 'allModels' => $queue->peek($subscriber_id, 200, [components\Message::AVAILABLE, components\Message::RESERVED, components\Message::DELETED]),
-                'sort'=>['attributes'=>['id'], 'defaultOrder' => ['id' => SORT_DESC]],
+                'sort' => ['attributes' => ['id'], 'defaultOrder' => ['id' => SORT_DESC]],
             ]);
             // reverse display order to simulate a chat window, where latest message is right above the message form
             $dataProvider->setModels(array_reverse($dataProvider->getModels()));
@@ -131,27 +134,30 @@ class QueueController extends \yii\web\Controller
      * @param string $subscriber_id
      * @param string $message_id
      */
-    public function actionMessage($queue_name, $subscriber_id=null, $message_id=null)
+    public function actionMessage($queue_name, $subscriber_id = null, $message_id = null)
     {
-        if (($subscriber_id=trim($subscriber_id))==='')
+        if (($subscriber_id = trim($subscriber_id)) === '') {
             $subscriber_id = null;
+        }
         list($queue, $authItems) = $this->loadQueue($queue_name, ['nfy.message.read', 'nfy.message.create']);
         $this->verifySubscriber($queue, $subscriber_id);
 
         if ($queue instanceof components\DbQueue) {
             $query = models\DbMessage::find()->withQueue($queue->id);
-            if ($subscriber_id !== null)
+            if ($subscriber_id !== null) {
                 $query->withSubscriber($subscriber_id);
+            }
 
-            $dbMessage = $query->andWhere(['in',models\DbMessage::tableName().'.'.models\DbMessage::primaryKey()[0], $message_id])->one();
-            if ($dbMessage === null)
+            $dbMessage = $query->andWhere(['in', models\DbMessage::tableName().'.'.models\DbMessage::primaryKey()[0], $message_id])->one();
+            if ($dbMessage === null) {
                 throw new NotFoundHttpException(Yii::t("app", 'Message with given ID was not found.'));
+            }
             $messages = models\DbMessage::createMessages($dbMessage);
             $message = reset($messages);
         } else {
             $dbMessage = null;
             //! @todo should we even bother to locate a single message by id?
-            $message = new components\Message;
+            $message = new components\Message();
             $message->setAttributes([
                 'id' => $message_id,
                 'subscriber_id' => $subscriber_id,
@@ -162,7 +168,7 @@ class QueueController extends \yii\web\Controller
         if (isset($_POST['delete'])) {
             $queue->delete($message->id, $message->subscriber_id);
 
-            return $this->redirect(['messages', 'queue_name'=> $queue_name, 'subscriber_id'=>$message->subscriber_id]);
+            return $this->redirect(['messages', 'queue_name' => $queue_name, 'subscriber_id' => $message->subscriber_id]);
         }
 
         return $this->render('message', [
@@ -181,23 +187,25 @@ class QueueController extends \yii\web\Controller
      * @return array                                        QueueInterface object and array with authItems as keys and boolean values
      * @throws ForbiddenHttpException,NotFoundHttpException
      */
-    protected function loadQueue($name, $authItems=[])
+    protected function loadQueue($name, $authItems = [])
     {
         /** @var CWebUser */
         $user = Yii::$app->user;
         /** @var Queue */
         $queue = Yii::$app->getComponent($name);
-        if (!($queue instanceof components\QueueInterface))
+        if (!($queue instanceof components\QueueInterface)) {
             throw new NotFoundHttpException(Yii::t("app", 'Queue with given ID was not found.'));
+        }
         $assignedAuthItems = [];
         $allowAccess = empty($authItems);
         foreach ($authItems as $authItem) {
-            $assignedAuthItems[$authItem] = $user->checkAccess($authItem, ['queue'=>$queue]);
-            if ($assignedAuthItems[$authItem])
+            $assignedAuthItems[$authItem] = $user->checkAccess($authItem, ['queue' => $queue]);
+            if ($assignedAuthItems[$authItem]) {
                 $allowAccess = true;
+            }
         }
         if (!$allowAccess) {
-            throw new ForbiddenHttpException(Yii::t('yii','You are not authorized to perform this action.'));
+            throw new ForbiddenHttpException(Yii::t('yii', 'You are not authorized to perform this action.'));
         }
 
         return [$queue, $assignedAuthItems];
@@ -214,8 +222,9 @@ class QueueController extends \yii\web\Controller
         /** @var CWebUser */
         $user = Yii::$app->user;
         $subscribedOnly = $user->checkAccess('nfy.message.read.subscribed', [], true, false);
-        if ($subscribedOnly && (!$queue->isSubscribed($user->getId()) || $subscriber_id != $user->getId()))
-            throw new ForbiddenHttpException(Yii::t('yii','You are not authorized to perform this action.'));
+        if ($subscribedOnly && (!$queue->isSubscribed($user->getId()) || $subscriber_id != $user->getId())) {
+            throw new ForbiddenHttpException(Yii::t('yii', 'You are not authorized to perform this action.'));
+        }
     }
 
     /**
@@ -223,17 +232,18 @@ class QueueController extends \yii\web\Controller
      * @param  boolean                $subscribed should the queue be checked using current user's subscription
      * @throws ForbiddenHttpException
      */
-    public function actionPoll($id, $subscribed=true)
+    public function actionPoll($id, $subscribed = true)
     {
         $userId = Yii::$app->user->getId();
         $queue = Yii::$app->getComponent($id);
-        if (!($queue instanceof components\QueueInterface))
+        if (!($queue instanceof components\QueueInterface)) {
             return [];
-        if (!Yii::$app->user->checkAccess('nfy.message.read', ['queue'=>$queue]))
-            throw new ForbiddenHttpException(Yii::t('yii','You are not authorized to perform this action.'));
+        }
+        if (!Yii::$app->user->checkAccess('nfy.message.read', ['queue' => $queue])) {
+            throw new ForbiddenHttpException(Yii::t('yii', 'You are not authorized to perform this action.'));
+        }
 
         Yii::$app->session->close();
-
 
         $data = [];
         $data['messages'] = $this->getMessages($queue, $subscribed ? $userId : null);
@@ -281,8 +291,11 @@ class QueueController extends \yii\web\Controller
 
         $results = [];
         foreach ($messages as $message) {
-            $result = ['title'=>$queue->label, 'body'=>$message->body];
-            if ($soundUrl!==null) {
+            $result = [
+                'title' => $queue->label,
+                'body' => $message->body,
+            ];
+            if ($soundUrl !== null) {
                 $result['sound'] = $soundUrl;
             }
             $results[] = $result;
@@ -293,6 +306,6 @@ class QueueController extends \yii\web\Controller
 
     public function createMessageUrl($queue_name, components\Message $message)
     {
-        return Url::toRoute('message', ['queue_name' => $queue_name, 'subscriber_id' => $message->subscriber_id, 'message_id'=>$message->id]);
+        return Url::toRoute('message', ['queue_name' => $queue_name, 'subscriber_id' => $message->subscriber_id, 'message_id' => $message->id]);
     }
 }

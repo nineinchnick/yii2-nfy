@@ -16,7 +16,7 @@
  *
  * NOTE, this file must be saved in UTF-8 encoding.
  */
-return array (
+return [
   'Categories' => 'Kategorie',
   'Exceptions' => 'Wyjątki',
   'Failed to save category {category} for subscription {subscription_id}' => 'Nie udało się zapisać kategorii {category} dla subskrypcji {subscription_id}',
@@ -48,4 +48,4 @@ return array (
   'Subscriptions' => 'Subskrypcje',
   'View all messages' => 'Zobacz wszystkie wiadomości',
   'View messages' => 'Zobacz wiadomości',
-);
+];

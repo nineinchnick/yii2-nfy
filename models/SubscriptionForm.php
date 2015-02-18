@@ -17,7 +17,7 @@ class SubscriptionForm extends Model
     public function rules()
     {
         return [
-            [['label', 'categories', 'exceptions'], 'filter', 'filter'=>'trim'],
+            [['label', 'categories', 'exceptions'], 'filter', 'filter' => 'trim'],
             [['label', 'categories', 'exceptions'], 'default'],
             [['categories', 'exceptions'], 'prepare'],
         ];
@@ -25,12 +25,14 @@ class SubscriptionForm extends Model
 
     public function prepare($attribute, $params)
     {
-        if ($this->$attribute === null)
+        if ($this->$attribute === null) {
             return true;
+        }
 
-        $values = array_map(function ($v) {return trim($v);}, explode(',',$this->$attribute));
-        if (!empty($values))
+        $values = array_map(function ($v) {return trim($v);}, explode(',', $this->$attribute));
+        if (!empty($values)) {
             $this->$attribute = $values;
+        }
 
         return true;
     }

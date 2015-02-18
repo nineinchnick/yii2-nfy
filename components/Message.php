@@ -54,9 +54,14 @@ class Message
 
     public function __sleep()
     {
-        $attributes = array('id', 'created_on', 'sender_id', 'timeout', 'body');
-        if ($this->status == self::RESERVED) $attributes[] = 'reserved_on';
-        if ($this->status == self::DELETED) $attributes[] = 'deleted_on';
+        $attributes = ['id', 'created_on', 'sender_id', 'timeout', 'body'];
+        if ($this->status == self::RESERVED) {
+            $attributes[] = 'reserved_on';
+        }
+        if ($this->status == self::DELETED) {
+            $attributes[] = 'deleted_on';
+        }
+
         return $attributes;
     }
 
@@ -66,11 +71,11 @@ class Message
      */
     public function setAttributes($values)
     {
-        if(!is_array($values))
-
+        if (!is_array($values)) {
             return;
-        foreach ($values as $name=>$value) {
-            $this->$name=$value;
+        }
+        foreach ($values as $name => $value) {
+            $this->$name = $value;
         }
     }
 }

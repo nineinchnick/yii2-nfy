@@ -9,7 +9,7 @@ use Yii;
  */
 class Module extends \yii\base\Module
 {
-    public $defaultController = 'queue';
+    public $defaultRoute = 'queue';
     /**
      * @var string Name of user model class.
      */
@@ -30,18 +30,18 @@ class Module extends \yii\base\Module
     /**
      * @var array list of queue application components that will be displayed in the index action of the default controller.
      */
-    public $queues = array();
+    public $queues = [];
 
     public function init()
     {
         parent::init();
-        \Yii::setAlias('@nfy', dirname(__FILE__));
-        \Yii::$app->i18n->translations['nfy'] = \Yii::$app->i18n->translations['auth'] = [
+        Yii::setAlias('@nfy', dirname(__FILE__));
+        Yii::$app->i18n->translations['nfy'] = \Yii::$app->i18n->translations['auth'] = [
             'class' => 'yii\i18n\PhpMessageSource',
             'sourceLanguage' => 'en-US',
             'basePath' => '@nfy/messages',
         ];
-        if (\Yii::$app instanceof yii\console\Application) {
+        if (Yii::$app instanceof yii\console\Application) {
             $this->controllerMap['nfy'] = 'nineinchnick\nfy\commands\NfyController';
         }
     }
