@@ -39,7 +39,7 @@ class QueueController extends \yii\web\Controller
     {
         /** @var CWebUser */
         $user = Yii::$app->user;
-        $subscribedOnly = $user->checkAccess('nfy.queue.read.subscribed', [], true, false);
+        $subscribedOnly = $user->can('nfy.queue.read.subscribed', [], true, false);
         $queues = [];
         foreach ($this->module->queues as $queueId) {
             /** @var Queue */
@@ -199,7 +199,7 @@ class QueueController extends \yii\web\Controller
         $assignedAuthItems = [];
         $allowAccess = empty($authItems);
         foreach ($authItems as $authItem) {
-            $assignedAuthItems[$authItem] = $user->checkAccess($authItem, ['queue' => $queue]);
+            $assignedAuthItems[$authItem] = $user->can($authItem, ['queue' => $queue]);
             if ($assignedAuthItems[$authItem]) {
                 $allowAccess = true;
             }
@@ -221,7 +221,7 @@ class QueueController extends \yii\web\Controller
     {
         /** @var CWebUser */
         $user = Yii::$app->user;
-        $subscribedOnly = $user->checkAccess('nfy.message.read.subscribed', [], true, false);
+        $subscribedOnly = $user->can('nfy.message.read.subscribed', [], true, false);
         if ($subscribedOnly && (!$queue->isSubscribed($user->getId()) || $subscriber_id != $user->getId())) {
             throw new ForbiddenHttpException(Yii::t('yii', 'You are not authorized to perform this action.'));
         }
@@ -239,7 +239,7 @@ class QueueController extends \yii\web\Controller
         if (!($queue instanceof components\QueueInterface)) {
             return [];
         }
-        if (!Yii::$app->user->checkAccess('nfy.message.read', ['queue' => $queue])) {
+        if (!Yii::$app->user->can('nfy.message.read', ['queue' => $queue])) {
             throw new ForbiddenHttpException(Yii::t('yii', 'You are not authorized to perform this action.'));
         }
 
