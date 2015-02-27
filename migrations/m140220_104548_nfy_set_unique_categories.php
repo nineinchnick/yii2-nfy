@@ -6,11 +6,13 @@ class m140220_104548_nfy_set_unique_categories extends \yii\db\Migration
 {
     public function safeUp()
     {
-        $this->execute('ALTER TABLE {{nfy_subscription_categories}} ADD CONSTRAINT {{nfy_subscription_categories}}_unique_categories UNIQUE (subscription_id, category, is_exception);');
+        $prefix = $this->db->tablePrefix;
+        $this->createIndex($prefix.'nfy_subscription_categories', '{{%nfy_subscription_categories}}', 'subscription_id, category, is_exception', true);
     }
 
     public function safeDown()
     {
-        $this->execute('ALTER TABLE {{nfy_subscription_categories}} DROP CONSTRAINT {{nfy_subscription_categories}}_unique_categories;');
+        $prefix = $this->db->tablePrefix;
+        $this->dropIndex($prefix.'nfy_subscription_categories', '{{%nfy_subscription_categories}}');
     }
 }
