@@ -208,9 +208,8 @@ class SysVQueue extends Queue
      * @inheritdoc
      * @throws NotSupportedException
      */
-    public function unsubscribe($subscriber_id, $permanent = true)
+    public function unsubscribe($subscriber_id, $categories = null)
     {
-        //! @todo method signature should match interface
         throw new NotSupportedException('Not implemented. System V queues does not support subscriptions.');
     }
 

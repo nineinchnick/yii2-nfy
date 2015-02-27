@@ -67,7 +67,7 @@ class DbSubscription extends \yii\db\ActiveRecord
 
     public function getMessagesCount()
     {
-        return 0; //! @todo implement
+        return $this->getMessages()->count();
     }
 
     /**

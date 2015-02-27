@@ -343,16 +343,31 @@ class RedisQueue extends Queue
     /**
      * @inheritdoc
      */
-    public function unsubscribe($subscriber_id, $permanent = true)
+    public function unsubscribe($subscriber_id, $categories = null)
     {
-        //! @todo doesn't match interface (missing $categories arg), backport to yii1
         if ($this->blocking) {
-            $this->redis->punsubscribe();
-            $this->redis->unsubscribe();
+            if ($categories === null) {
+                $this->redis->punsubscribe();
+                $this->redis->unsubscribe();
+            } else {
+                foreach ($categories as $category) {
+                    if (($c = rtrim($category, '*')) !== $category) {
+                        $this->redis->punsubscribe($category);
+                    } else {
+                        $this->redis->unsubscribe($category);
+                    }
+                }
+            }
 
             return;
         }
-        $this->redis->hdel($this->id.self::SUBSCRIPTIONS_HASH, $subscriber_id);
+        if ($categories === null) {
+            $this->redis->hdel($this->id.self::SUBSCRIPTIONS_HASH, $subscriber_id);
+        } else {
+            $subscription = unserialize($this->redis->hget($this->id.self::SUBSCRIPTIONS_HASH, $subscriber_id));
+            $subscription->categories = array_diff($subscription->categories, $categories);
+            $this->redis->hset($this->id.self::SUBSCRIPTIONS_HASH, $subscriber_id, serialize($subscription));
+        }
     }
 
     /**

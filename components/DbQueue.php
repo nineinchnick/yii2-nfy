@@ -329,12 +329,13 @@ class DbQueue extends Queue
         if ($subscription !== null) {
             $canDelete = true;
             if ($categories !== null) {
-                //! @todo port
                 // it may be a case when some (but not all) categories are about to be unsubscribed
                 // if that happens and this subscription ends up with some other categories, only given categories
                 // should be deleted, not the whole subscription
-                NfyDbSubscriptionCategory::model()->deleteByPk(array_map(function ($c) { return $c->id; }, $subscription->categories));
-                $canDelete = NfyDbSubscriptionCategory::model()->countByAttributes(['subscription_id' => $subscription->id]) <= 0;
+                models\DbSubscriptionCategory::deleteAll([
+                    models\DbSubscriptionCategory::primaryKey() => array_map(function ($c) { return $c->id; }, $subscription->categories),
+                ]);
+                $canDelete = models\DbSubscriptionCategory::find()->where(['subscription_id' => $subscription->id])->count() <= 0;
             }
 
             if ($canDelete) {
