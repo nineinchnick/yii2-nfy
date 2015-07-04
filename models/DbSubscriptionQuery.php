@@ -60,7 +60,7 @@ class DbSubscriptionQuery extends \yii\db\ActiveQuery
 
         $i = 0;
         foreach ($categories as $category) {
-            $this->andWhere("($r.is_exception = 0 AND :category$i LIKE $r.category) OR ($r.is_exception = 1 AND :category$i NOT LIKE $r.category)", [':category'.$i++ => $category]);
+            $this->andWhere("($r.is_exception = false AND :category$i LIKE $r.category) OR ($r.is_exception = 1 AND :category$i NOT LIKE $r.category)", [':category'.$i++ => $category]);
         }
 
         return $this;
