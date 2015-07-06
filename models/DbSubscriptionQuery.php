@@ -10,7 +10,7 @@ class DbSubscriptionQuery extends \yii\db\ActiveQuery
     public function current()
     {
         $modelClass = $this->modelClass;
-        $this->andWhere($modelClass::tableName().'.is_deleted = 0');
+        $this->andWhere($modelClass::tableName().'.is_deleted = false');
 
         return $this;
     }
