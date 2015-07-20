@@ -1,8 +1,9 @@
 <?php
 
-namespace nineinchnick\nfy;
+namespace nineinchnick\nfy\widgets;
 
 use yii\base\Widget;
+use yii\web\View;
 
 /**
  * Poll messages and display them as notifications, optionally playing a sound.
@@ -37,36 +38,28 @@ class WebNotifications extends Widget
 
     /**
      * Registers required JS libraries and CSS files.
+     * @param \yii\web\View $view
      * @param  string $method use either METHOD_POLL or METHOD_PULL constants
      * @return string base URL for assets
      */
-    public static function initClientScript($method = self::METHOD_POLL)
+    public static function initClientScript($view, $method = self::METHOD_POLL)
     {
-        $bu = Yii::app()->assetManager->publish(dirname(__FILE__).'/assets/');
-        $cs = Yii::app()->clientScript;
-        $cs->registerCoreScript('jquery');
-        $cs->registerCssFile($bu.'/css/webnotification.min.css');
-        $cs->registerScriptFile($bu.'/js/jquery.webnotification'.(YII_DEBUG ? '' : '.min').'.js');
-        if ($method == self::METHOD_PUSH) {
-            $cs->registerScriptFile($bu.'/js/sockjs-0.3'.(YII_DEBUG ? '' : '.min').'.js');
-        }
-        $cs->registerScriptFile($bu.'/js/main.js');
-
-        return $bu;
+        $asset = NfyAsset::register($view);
+        return $asset->baseUrl;
     }
 
     public function run()
     {
-        $bu = self::initClientScript($this->method);
+        $baseUrl = self::initClientScript($this->view, $this->method);
         $options = [
             'url' => $this->url,
-            'baseUrl' => $bu,
+            'baseUrl' => $baseUrl,
             'method' => $this->method,
             'pollInterval' => $this->pollInterval,
             'websocket' => $this->websocket,
         ];
-        $options = CJavaScript::encode($options);
+        $options = \yii\helpers\Json::encode($options);
         $script = "notificationsPoller.init({$options});";
-        Yii::app()->clientScript->registerScript(__CLASS__.'#'.$this->id, $script, CClientScript::POS_END);
+        $this->view->registerJs($script, View::POS_END);
     }
 }
