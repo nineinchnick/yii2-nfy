@@ -111,8 +111,8 @@ class DbMessage extends \yii\db\ActiveRecord
 
     public function __clone()
     {
-        $this->id = null;
-        $this->subscription_id = null;
+        unset($this->id);
+        unset($this->subscription_id);
         $this->isNewRecord = true;
     }
 
