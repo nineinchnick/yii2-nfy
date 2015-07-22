@@ -10,7 +10,7 @@ use yii\mail\MailerInterface;
 use yii\mail\MessageInterface;
 
 /**
- * Sends messages via email. Recipients are determined using subscribers.
+ * Sends messages via email. Recipients are determined using subscribers id.
  * Subscriptions are tracked using a different queue.
  */
 class MailQueue extends Queue
@@ -18,7 +18,7 @@ class MailQueue extends Queue
     /** @var QueueInterface queue used to track subscriptions */
     public $subscriptionQueue;
     /** @var MailerInterface mailer through which messages are sent and which credentials are used to check email */
-    public $mailer;
+    public $mailer = 'mailer';
     /** @var callable a callable to fetch recipients email using a subscriber id */
     public $recipientCallback;
     /** @var callable a callable to compose a new email using the message body */
