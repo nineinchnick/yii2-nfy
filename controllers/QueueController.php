@@ -261,7 +261,7 @@ class QueueController extends \yii\web\Controller
     public function actionPoll($id, $subscribed = true)
     {
         $userId = Yii::$app->user->getId();
-        $queue = Yii::$app->getComponent($id);
+        $queue = Yii::$app->get($id);
         if (!($queue instanceof components\QueueInterface)) {
             return [];
         }
