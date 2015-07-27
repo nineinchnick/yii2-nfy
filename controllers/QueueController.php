@@ -48,7 +48,10 @@ class QueueController extends \yii\web\Controller
         foreach ($this->module->queues as $queueId) {
             /** @var Queue */
             $queue = Yii::$app->get($queueId);
-            if (!($queue instanceof components\QueueInterface) || ($subscribedOnly && !$queue->isSubscribed($user->getId()))) {
+            if (!($queue instanceof components\QueueInterface)
+                || ($subscribedOnly
+                    && !$queue->isSubscribed($user->getId()))
+            ) {
                 continue;
             }
             $queues[$queueId] = $queue;
@@ -70,17 +73,20 @@ class QueueController extends \yii\web\Controller
         /** @var QueueInterface $queue */
         list($queue, $authItems) = $this->loadQueue($queue_name, ['nfy.queue.subscribe']);
 
-        $formModel = new models\SubscriptionForm();
+        $form = new models\SubscriptionForm();
         if (isset($_POST['SubscriptionForm'])) {
-            $formModel->attributes = $_POST['SubscriptionForm'];
-            if ($formModel->validate()) {
-                $queue->subscribe(Yii::$app->user->getId(), $formModel->label, $formModel->categories, $formModel->exceptions);
+            $form->attributes = $_POST['SubscriptionForm'];
+            if ($form->validate()) {
+                $queue->subscribe(Yii::$app->user->getId(), $form->label, $form->categories, $form->exceptions);
 
                 return $this->redirect(['index']);
             }
         }
 
-        return $this->render('subscription', ['queue' => $queue, 'model' => $formModel]);
+        return $this->render('subscription', [
+            'queue' => $queue,
+            'model' => $form,
+        ]);
     }
 
     /**
@@ -172,7 +178,11 @@ class QueueController extends \yii\web\Controller
                 $query->withSubscriber($subscriber_id);
             }
 
-            $dbMessage = $query->andWhere(['in', models\DbMessage::tableName().'.'.models\DbMessage::primaryKey()[0], $message_id])->one();
+            $dbMessage = $query->andWhere([
+                'in',
+                models\DbMessage::tableName().'.'.models\DbMessage::primaryKey()[0],
+                $message_id,
+            ])->one();
             if ($dbMessage === null) {
                 throw new NotFoundHttpException(Yii::t("app", 'Message with given ID was not found.'));
             }
@@ -192,7 +202,11 @@ class QueueController extends \yii\web\Controller
         if (isset($_POST['delete'])) {
             $queue->delete($message->id, $message->subscriber_id);
 
-            return $this->redirect(['messages', 'queue_name' => $queue_name, 'subscriber_id' => $message->subscriber_id]);
+            return $this->redirect([
+                'messages',
+                'queue_name' => $queue_name,
+                'subscriber_id' => $message->subscriber_id,
+            ]);
         }
 
         return $this->render('message', [
@@ -337,6 +351,10 @@ class QueueController extends \yii\web\Controller
 
     public function createMessageUrl($queue_name, components\Message $message)
     {
-        return Url::toRoute('message', ['queue_name' => $queue_name, 'subscriber_id' => $message->subscriber_id, 'message_id' => $message->id]);
+        return Url::toRoute('message', [
+            'queue_name' => $queue_name,
+            'subscriber_id' => $message->subscriber_id,
+            'message_id' => $message->id,
+        ]);
     }
 }
