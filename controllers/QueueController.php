@@ -2,12 +2,16 @@
 
 namespace nineinchnick\nfy\controllers;
 
+use nineinchnick\nfy\components\Queue;
+use nineinchnick\nfy\components\QueueInterface;
+use nineinchnick\nfy\Module;
 use Yii;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\helpers\Url;
 use nineinchnick\nfy\components;
 use nineinchnick\nfy\models;
+use yii\web\User;
 
 /**
  * The default controller providing a basic queue managment interface and poll action.
@@ -37,28 +41,33 @@ class QueueController extends \yii\web\Controller
      */
     public function actionIndex()
     {
-        /** @var CWebUser */
+        /** @var User */
         $user = Yii::$app->user;
-        $subscribedOnly = $user->can('nfy.queue.read.subscribed', [], true, false);
+        $subscribedOnly = $user->can('nfy.queue.read.subscribed', [], true);
         $queues = [];
         foreach ($this->module->queues as $queueId) {
             /** @var Queue */
-            $queue = Yii::$app->getComponent($queueId);
+            $queue = Yii::$app->get($queueId);
             if (!($queue instanceof components\QueueInterface) || ($subscribedOnly && !$queue->isSubscribed($user->getId()))) {
                 continue;
             }
             $queues[$queueId] = $queue;
         }
 
-        return $this->render('index', ['queues' => $queues, 'subscribedOnly' => $subscribedOnly]);
+        return $this->render('index', [
+            'queues' => $queues,
+            'subscribedOnly' => $subscribedOnly,
+        ]);
     }
 
     /**
      * Subscribe current user to selected queue.
      * @param string $queue_name
+     * @return string|\yii\web\Response
      */
     public function actionSubscribe($queue_name)
     {
+        /** @var QueueInterface $queue */
         list($queue, $authItems) = $this->loadQueue($queue_name, ['nfy.queue.subscribe']);
 
         $formModel = new models\SubscriptionForm();
@@ -77,9 +86,11 @@ class QueueController extends \yii\web\Controller
     /**
      * Unsubscribe current user from selected queue.
      * @param string $queue_name
+     * @return \yii\web\Response
      */
     public function actionUnsubscribe($queue_name)
     {
+        /** @var QueueInterface $queue */
         list($queue, $authItems) = $this->loadQueue($queue_name, ['nfy.queue.unsubscribe']);
         $queue->unsubscribe(Yii::$app->user->getId());
 
@@ -90,12 +101,14 @@ class QueueController extends \yii\web\Controller
      * Displays and send messages in the specified queue.
      * @param string $queue_name
      * @param string $subscriber_id
+     * @return string|\yii\web\Response
      */
     public function actionMessages($queue_name, $subscriber_id = null)
     {
         if (($subscriber_id = trim($subscriber_id)) === '') {
             $subscriber_id = null;
         }
+        /** @var QueueInterface $queue */
         list($queue, $authItems) = $this->loadQueue($queue_name, ['nfy.message.read', 'nfy.message.create']);
         $this->verifySubscriber($queue, $subscriber_id);
 
@@ -112,8 +125,15 @@ class QueueController extends \yii\web\Controller
         $dataProvider = null;
         if ($authItems['nfy.message.read']) {
             $dataProvider = new \yii\data\ArrayDataProvider([
-                'allModels' => $queue->peek($subscriber_id, 200, [components\Message::AVAILABLE, components\Message::RESERVED, components\Message::DELETED]),
-                'sort' => ['attributes' => ['id'], 'defaultOrder' => ['id' => SORT_DESC]],
+                'allModels' => $queue->peek($subscriber_id, 200, [
+                    components\Message::AVAILABLE,
+                    components\Message::RESERVED,
+                    components\Message::DELETED,
+                ]),
+                'sort' => [
+                    'attributes' => ['id'],
+                    'defaultOrder' => ['id' => SORT_DESC],
+                ],
             ]);
             // reverse display order to simulate a chat window, where latest message is right above the message form
             $dataProvider->setModels(array_reverse($dataProvider->getModels()));
@@ -133,12 +153,16 @@ class QueueController extends \yii\web\Controller
      * @param string $queue_name
      * @param string $subscriber_id
      * @param string $message_id
+     * @return string|\yii\web\Response
+     * @throws ForbiddenHttpException
+     * @throws NotFoundHttpException
      */
     public function actionMessage($queue_name, $subscriber_id = null, $message_id = null)
     {
         if (($subscriber_id = trim($subscriber_id)) === '') {
             $subscriber_id = null;
         }
+        /** @var QueueInterface $queue */
         list($queue, $authItems) = $this->loadQueue($queue_name, ['nfy.message.read', 'nfy.message.create']);
         $this->verifySubscriber($queue, $subscriber_id);
 
@@ -182,17 +206,18 @@ class QueueController extends \yii\web\Controller
 
     /**
      * Loads queue specified by id and checks authorization.
-     * @param  string                                       $name      queue component name
-     * @param  array                                        $authItems
-     * @return array                                        QueueInterface object and array with authItems as keys and boolean values
-     * @throws ForbiddenHttpException,NotFoundHttpException
+     * @param  string $name queue component name
+     * @param  array $authItems
+     * @return array QueueInterface object and array with authItems as keys and boolean values
+     * @throws ForbiddenHttpException
+     * @throws NotFoundHttpException
      */
     protected function loadQueue($name, $authItems = [])
     {
-        /** @var CWebUser */
+        /** @var User */
         $user = Yii::$app->user;
         /** @var Queue */
-        $queue = Yii::$app->getComponent($name);
+        $queue = Yii::$app->get($name);
         if (!($queue instanceof components\QueueInterface)) {
             throw new NotFoundHttpException(Yii::t("app", 'Queue with given ID was not found.'));
         }
@@ -219,17 +244,18 @@ class QueueController extends \yii\web\Controller
      */
     protected function verifySubscriber($queue, $subscriber_id)
     {
-        /** @var CWebUser */
+        /** @var User */
         $user = Yii::$app->user;
-        $subscribedOnly = $user->can('nfy.message.read.subscribed', [], true, false);
+        $subscribedOnly = $user->can('nfy.message.read.subscribed', [], true);
         if ($subscribedOnly && (!$queue->isSubscribed($user->getId()) || $subscriber_id != $user->getId())) {
             throw new ForbiddenHttpException(Yii::t('yii', 'You are not authorized to perform this action.'));
         }
     }
 
     /**
-     * @param  string                 $id         id of the queue component
-     * @param  boolean                $subscribed should the queue be checked using current user's subscription
+     * @param  string $id          id of the queue component
+     * @param  boolean $subscribed should the queue be checked using current user's subscription
+     * @return array
      * @throws ForbiddenHttpException
      */
     public function actionPoll($id, $subscribed = true)
@@ -248,8 +274,10 @@ class QueueController extends \yii\web\Controller
         $data = [];
         $data['messages'] = $this->getMessages($queue, $subscribed ? $userId : null);
 
-        $pollFor = $this->getModule()->longPolling;
-        $maxPoll = $this->getModule()->maxPollCount;
+        /** @var Module $module */
+        $module = Yii::$app->getModule($this->module);
+        $pollFor = $module->longPolling;
+        $maxPoll = $module->maxPollCount;
         if ($pollFor && $maxPoll && empty($data['messages'])) {
             while (empty($data['messages']) && $maxPoll) {
                 $data['messages'] = $this->getMessages($queue, $subscribed ? $userId : null);
@@ -259,13 +287,14 @@ class QueueController extends \yii\web\Controller
         }
 
         if (empty($data['messages'])) {
-            header("HTTP/1.0 304 Not Modified");
-            exit();
-        } else {
-            header("Content-type: application/json");
-            Yii::$app->getClientScript()->reset();
-            echo json_encode($data);
+            Yii::$app->response->setStatusCode(304);
+            Yii::$app->end();
+            return;
         }
+        Yii::$app->response->format = 'application/json';
+        $this->view->jsFiles = [];
+        $this->view->cssFiles = [];
+        echo json_encode($data);
     }
 
     /**
@@ -287,7 +316,9 @@ class QueueController extends \yii\web\Controller
         }
 
         $messages = array_slice($messages, 0, 20);
-        $soundUrl = $this->getModule()->soundUrl !== null ? $this->createAbsoluteUrl($this->getModule()->soundUrl) : null;
+        /** @var Module $module */
+        $module = Yii::$app->getModule($this->module);
+        $soundUrl = $module->soundUrl !== null ? Url::to($module->soundUrl) : null;
 
         $results = [];
         foreach ($messages as $message) {
