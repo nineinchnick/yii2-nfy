@@ -70,21 +70,21 @@ interface QueueInterface
      * @param  mixed         $subscriber_id the actual format depends on the implementation
      * @param  integer       $limit         number of available messages that will be fetched from the queue, defaults to -1 which means no limit
      * @param  integer|array $status        allows peeking at reserved or removed messages (not yet permanently)
-     * @return array         of NfyMessage objects
+     * @return Message[]
      */
-    public function peek($subscriber_id = null, $limit = -1, $status = NfyMessage::AVAILABLE);
+    public function peek($subscriber_id = null, $limit = -1, $status = Message::AVAILABLE);
     /**
      * Gets available messages from the queue and reserves them. Unless they are deleted, they will be released after a specific amount of time.
      * @param  mixed   $subscriber_id the actual format depends on the implementation
      * @param  integer $limit         number of available messages that will be fetched from the queue, defaults to -1 which means no limit
-     * @return array   of NfyMessage objects
+     * @return Message[]
      */
     public function reserve($subscriber_id = null, $limit = -1);
     /**
      * Gets available messages from the queue and removes them from the queue.
      * @param  mixed   $subscriber_id the actual format depends on the implementation
      * @param  integer $limit         number of available messages that will be fetched from the queue, defaults to -1 which means no limit
-     * @return array   of NfyMessage objects
+     * @return Message[]
      */
     public function receive($subscriber_id = null, $limit = -1);
     /**
