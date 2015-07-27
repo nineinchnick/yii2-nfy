@@ -43,7 +43,7 @@ class QueueController extends \yii\web\Controller
     {
         /** @var User */
         $user = Yii::$app->user;
-        $subscribedOnly = $user->can('nfy.queue.read.subscribed', [], true);
+        $subscribedOnly = $user->can('nfy.queue.read.subscribed');
         $queues = [];
         foreach ($this->module->queues as $queueId) {
             /** @var Queue */
@@ -124,7 +124,11 @@ class QueueController extends \yii\web\Controller
             if ($formModel->validate()) {
                 $queue->send($formModel->content, $formModel->category);
 
-                return $this->redirect(['messages', 'queue_name' => $queue_name, 'subscriber_id' => $subscriber_id]);
+                return $this->redirect([
+                    'messages',
+                    'queue_name' => $queue_name,
+                    'subscriber_id' => $subscriber_id,
+                ]);
             }
         }
 
@@ -152,6 +156,32 @@ class QueueController extends \yii\web\Controller
             'model' => $formModel,
             'authItems' => $authItems,
         ]);
+    }
+
+    /**
+     * Marks all messages or specified message as read.
+     * @param $queue_name
+     * @param mixed $message_id
+     * @param mixed $subscriber_id
+     * @return \yii\web\Response
+     */
+    public function actionMark($queue_name, $message_id = null, $subscriber_id = null)
+    {
+        if (($subscriber_id = trim($subscriber_id)) === '') {
+            $subscriber_id = null;
+        }
+        /** @var QueueInterface $queue */
+        list($queue, $authItems) = $this->loadQueue($queue_name, ['nfy.message.read']);
+        $this->verifySubscriber($queue, $subscriber_id);
+
+        if ($authItems['nfy.message.read']) {
+            if ($message_id === null) {
+                $queue->receive($subscriber_id);
+            } else {
+                $queue->delete($message_id);
+            }
+        }
+        return $this->redirect(Yii::$app->user->returnUrl);
     }
 
     /**
@@ -260,7 +290,7 @@ class QueueController extends \yii\web\Controller
     {
         /** @var User */
         $user = Yii::$app->user;
-        $subscribedOnly = $user->can('nfy.message.read.subscribed', [], true);
+        $subscribedOnly = $user->can('nfy.message.read.subscribed');
         if ($subscribedOnly && (!$queue->isSubscribed($user->getId()) || $subscriber_id != $user->getId())) {
             throw new ForbiddenHttpException(Yii::t('yii', 'You are not authorized to perform this action.'));
         }
