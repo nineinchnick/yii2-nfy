@@ -77,11 +77,7 @@ class Subscription
     private function categoryContains($container, $category)
     {
         if (($c = rtrim($container, '*')) !== $container) {
-            if (($c2 = rtrim($c, '.')) !== $c) {
-                if ($c2 == $category || strpos($category, $c2.'.') === 0) {
-                    return true;
-                }
-            } elseif (strpos($category, $c) === 0) {
+            if (strpos($category, $c) === 0) {
                 return true;
             }
         } elseif ($container == $category) {
