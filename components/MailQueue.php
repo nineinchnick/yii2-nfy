@@ -65,8 +65,8 @@ class MailQueue extends Queue
     {
         if ($this->beforeSend($message) !== true) {
             Yii::info(Yii::t('app', "Not sending message '{msg}' to queue {queue_label}.", [
-                '{msg}' => $message,
-                '{queue_label}' => $this->label,
+                'msg' => $message,
+                'queue_label' => $this->label,
             ]), 'nfy');
 
             return false;
@@ -91,9 +91,9 @@ class MailQueue extends Queue
 
             if (!$mailMessage->setTo(call_user_func($this->recipientCallback, $subscription->subscriber_id))->send()) {
                 Yii::error(Yii::t('app', "Failed to save message '{msg}' in queue {queue_label} for the subscription {subscription_id}.", [
-                    '{msg}'             => $message,
-                    '{queue_label}'     => $this->label,
-                    '{subscription_id}' => $subscription->subscriber_id,
+                    'msg'             => $message,
+                    'queue_label'     => $this->label,
+                    'subscription_id' => $subscription->subscriber_id,
                 ]), 'nfy');
                 $success = false;
             }
@@ -104,8 +104,8 @@ class MailQueue extends Queue
         $this->afterSend($message);
 
         Yii::info(Yii::t('app', "Sent message '{msg}' to queue {queue_label}.", [
-            '{msg}' => $message,
-            '{queue_label}' => $this->label,
+            'msg' => $message,
+            'queue_label' => $this->label,
         ]), 'nfy');
 
         return $success;

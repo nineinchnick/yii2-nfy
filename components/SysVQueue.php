@@ -95,8 +95,8 @@ class SysVQueue extends Queue
 
         if ($this->beforeSend($queueMessage) !== true) {
             Yii::info(Yii::t('app', "Not sending message '{msg}' to queue {queue_label}.", [
-                '{msg}' => $queueMessage->body,
-                '{queue_label}' => $this->label
+                'msg' => $queueMessage->body,
+                'queue_label' => $this->label
             ]), 'nfy');
 
             return;
@@ -105,12 +105,12 @@ class SysVQueue extends Queue
         $success = msg_send($this->getQueue(), 1, $queueMessage, true, false, $errorcode);
         if (!$success) {
             Yii::error(Yii::t('app', "Failed to save message '{msg}' in queue {queue_label}.", [
-                '{msg}' => $queueMessage->body,
-                '{queue_label}' => $this->label,
+                'msg' => $queueMessage->body,
+                'queue_label' => $this->label,
             ]), 'nfy');
             if ($errorcode === MSG_EAGAIN) {
                 Yii::error(Yii::t('app', "Queue {queue_label} is full.", [
-                    '{queue_label}' => $this->label,
+                    'queue_label' => $this->label,
                 ]), 'nfy');
             }
 
@@ -120,8 +120,8 @@ class SysVQueue extends Queue
         $this->afterSend($queueMessage);
 
         Yii::info(Yii::t('app', "Sent message '{msg}' to queue {queue_label}.", [
-            '{msg}' => $queueMessage->body,
-            '{queue_label}' => $this->label,
+            'msg' => $queueMessage->body,
+            'queue_label' => $this->label,
         ]), 'nfy');
     }
 

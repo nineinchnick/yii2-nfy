@@ -57,13 +57,25 @@ class DbSubscriptionQuery extends \yii\db\ActiveQuery
         if (!is_array($categories)) {
             $categories = [$categories];
         }
+        if (empty($categories)) {
+            return $this;
+        }
 
         $this->innerJoinWith('categories');
 
         $i = 0;
+        $conditions = ['AND'];
+        $params = [];
         foreach ($categories as $category) {
-            $this->andWhere("($r.is_exception = false AND :category$i LIKE $r.category) OR ($r.is_exception = true AND :category$i NOT LIKE $r.category)", [':category'.$i++ => $category]);
+            $conditions[] = [
+                'OR',
+                "($r.is_exception = false AND :category$i LIKE $r.category)",
+                "($r.is_exception = true AND :category$i NOT LIKE $r.category)",
+            ];
+            $params[':category'.$i++] = $category;
         }
+
+        $this->andWhere($conditions, $params);
 
         return $this;
     }

@@ -114,7 +114,7 @@ class DbSubscription extends \yii\db\ActiveRecord
             $subscription = new components\Subscription();
             $subscription->setAttributes($attributes);
             foreach ($dbSubscription->categories as $category) {
-                if ($category->is_exception) {
+                if (!$category->is_exception) {
                     $subscription->categories[] = $category->category;
                 } else {
                     $subscription->exceptions[] = $category->category;

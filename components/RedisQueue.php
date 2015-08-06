@@ -84,8 +84,8 @@ class RedisQueue extends Queue
 
         if ($this->beforeSend($queueMessage) !== true) {
             Yii::info(Yii::t('app', "Not sending message '{msg}' to queue {queue_label}.", [
-                '{msg}' => $queueMessage->body,
-                '{queue_label}' => $this->label,
+                'msg' => $queueMessage->body,
+                'queue_label' => $this->label,
             ]), 'nfy');
 
             return;
@@ -100,8 +100,8 @@ class RedisQueue extends Queue
         $this->afterSend($queueMessage);
 
         Yii::info(Yii::t('app', "Sent message '{msg}' to queue {queue_label}.", [
-            '{msg}' => $queueMessage->body,
-            '{queue_label}' => $this->label,
+            'msg' => $queueMessage->body,
+            'queue_label' => $this->label,
         ]), 'nfy');
     }
 

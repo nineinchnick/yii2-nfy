@@ -72,10 +72,10 @@ class DbQueue extends Queue
 
             if (!$subscriptionMessage->save()) {
                 Yii::error(Yii::t('app', "Failed to save message '{msg}' in queue {queue_label} for the subscription {subscription_id}.", [
-                    '{msg}'             => $queueMessage->body,
-                    '{queue_label}'     => $this->label,
-                    '{subscription_id}' => $subscription->id,
-                ]), 'nfy');
+                    'msg'             => $queueMessage->body,
+                    'queue_label'     => $this->label,
+                    'subscription_id' => $subscription->id,
+                ]) . ' ' . print_r($subscriptionMessage->getErrors(), true), 'nfy');
                 $success = false;
             }
 
@@ -93,8 +93,8 @@ class DbQueue extends Queue
 
         if ($this->beforeSend($queueMessage) !== true) {
             Yii::info(Yii::t('app', "Not sending message '{msg}' to queue {queue_label}.", [
-                '{msg}' => $queueMessage->body,
-                '{queue_label}' => $this->label,
+                'msg' => $queueMessage->body,
+                'queue_label' => $this->label,
             ]), 'nfy');
 
             return;
@@ -109,9 +109,9 @@ class DbQueue extends Queue
         // empty($subscriptions) &&
         if (!$queueMessage->save()) {
             Yii::error(Yii::t('app', "Failed to save message '{msg}' in queue {queue_label}.", [
-                '{msg}' => $queueMessage->body,
-                '{queue_label}' => $this->label,
-            ]), 'nfy');
+                'msg' => $queueMessage->body,
+                'queue_label' => $this->label,
+            ]) . ' ' . print_r($queueMessage->getErrors(), true), 'nfy');
 
             return false;
         }
@@ -127,8 +127,8 @@ class DbQueue extends Queue
         }
 
         Yii::info(Yii::t('app', "Sent message '{msg}' to queue {queue_label}.", [
-            '{msg}' => $queueMessage->body,
-            '{queue_label}' => $this->label,
+            'msg' => $queueMessage->body,
+            'queue_label' => $this->label,
         ]), 'nfy');
 
         return $success;
@@ -295,8 +295,8 @@ class DbQueue extends Queue
         }
         if (!$subscription->save()) {
             throw new Exception(Yii::t('app', 'Failed to subscribe {subscriber_id} to {queue_label}', [
-                '{subscriber_id}' => $subscriber_id,
-                '{queue_label}'   => $this->label,
+                'subscriber_id' => $subscriber_id,
+                'queue_label'   => $this->label,
             ]));
         }
         $this->saveSubscriptionCategories($categories, $subscription->primaryKey, false);
@@ -325,8 +325,8 @@ class DbQueue extends Queue
             ]);
             if (!$subscriptionCategory->save()) {
                 throw new Exception(Yii::t('app', 'Failed to save category {category} for subscription {subscription_id}', [
-                    '{category}' => $category,
-                    '{subscription_id}' => $subscription_id,
+                    'category' => $category,
+                    'subscription_id' => $subscription_id,
                 ]));
             }
         }

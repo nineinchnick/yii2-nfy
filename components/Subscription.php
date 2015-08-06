@@ -66,22 +66,26 @@ class Subscription
     }
 
     /**
-     * Checkes if category $a contains $b.
-     * @param string $a category name that can contain wildcards
-     * @param string $b category name without wildcards
+     * Checkes if $container contains $category, supporting wildcards.
+     * Examples:
+     * - category* contains category, categoryX, category.1
+     * - category.* contains only category.1, not category itself
+     * - category.1* contains category.12, category.13
+     * @param string $container category name that can contain wildcards
+     * @param string $category category name without wildcards
      */
     private function categoryContains($container, $category)
     {
         if (($c = rtrim($container, '*')) !== $container) {
             if (($c2 = rtrim($c, '.')) !== $c) {
                 if ($c2 == $category || strpos($category, $c2.'.') === 0) {
-                    $result = true;
+                    return true;
                 }
             } elseif (strpos($category, $c) === 0) {
-                $result = true;
+                return true;
             }
         } elseif ($container == $category) {
-            $result = true;
+            return true;
         }
 
         return false;
