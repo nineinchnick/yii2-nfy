@@ -2,8 +2,8 @@
 
 namespace nineinchnick\nfy\models;
 
-use Yii;
 use yii\base\Model;
+use Yii;
 
 /**
  * SubscriptionForm is the model behind the message form.

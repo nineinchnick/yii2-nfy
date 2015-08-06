@@ -3,6 +3,7 @@
 namespace nineinchnick\nfy\models;
 
 use nineinchnick\nfy\components;
+use Yii;
 
 /**
  * This is the model class for table "{{nfy_messages}}".

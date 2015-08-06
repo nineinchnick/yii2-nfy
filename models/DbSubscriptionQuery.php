@@ -2,6 +2,8 @@
 
 namespace nineinchnick\nfy\models;
 
+use Yii;
+
 /**
  * Collection of scopes for the DbSubscription AR model.
  */

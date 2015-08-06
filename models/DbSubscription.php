@@ -2,8 +2,8 @@
 
 namespace nineinchnick\nfy\models;
 
-use Yii;
 use nineinchnick\nfy\components;
+use Yii;
 
 /**
  * This is the model class for table "{{nfy_subscriptions}}".
