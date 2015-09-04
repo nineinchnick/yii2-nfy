@@ -41,7 +41,7 @@ class Module extends \yii\base\Module
             'sourceLanguage' => 'en-US',
             'basePath' => '@nfy/messages',
         ];
-        if (Yii::$app instanceof yii\console\Application) {
+        if (Yii::$app instanceof \yii\console\Application) {
             $this->controllerMap['nfy'] = 'nineinchnick\nfy\commands\NfyController';
         }
     }
