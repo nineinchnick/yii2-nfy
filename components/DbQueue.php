@@ -354,9 +354,9 @@ class DbQueue extends Queue
                 // it may be a case when some (but not all) categories are about to be unsubscribed
                 // if that happens and this subscription ends up with some other categories, only given categories
                 // should be deleted, not the whole subscription
+                $primaryKey = models\DbSubscriptionCategory::primaryKey();
                 models\DbSubscriptionCategory::deleteAll([
-                    reset(models\DbSubscriptionCategory::primaryKey()) =>
-                        array_map(function ($c) { return $c->id; }, $subscription->categories)
+                    reset($primaryKey) => array_map(function ($c) { return $c->id; }, $subscription->categories)
                 ]);
                 $canDelete = models\DbSubscriptionCategory::find()->where([
                     'subscription_id' => $subscription->id,
