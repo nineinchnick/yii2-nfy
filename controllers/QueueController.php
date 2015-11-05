@@ -163,9 +163,10 @@ class QueueController extends \yii\web\Controller
      * @param $queue_name
      * @param mixed $message_id
      * @param mixed $subscriber_id
+     * @param string $returnUrl
      * @return \yii\web\Response
      */
-    public function actionMark($queue_name, $message_id = null, $subscriber_id = null)
+    public function actionMark($queue_name, $message_id = null, $subscriber_id = null, $returnUrl = null)
     {
         if (($subscriber_id = trim($subscriber_id)) === '') {
             $subscriber_id = null;
@@ -181,7 +182,7 @@ class QueueController extends \yii\web\Controller
                 $queue->delete($message_id);
             }
         }
-        return $this->redirect(Yii::$app->user->returnUrl);
+        return $this->redirect($returnUrl !== null ? $returnUrl : Yii::$app->user->returnUrl);
     }
 
     /**
