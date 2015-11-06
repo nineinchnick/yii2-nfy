@@ -211,13 +211,17 @@ class DbQueue extends Queue
     {
         $trx = models\DbMessage::getDb()->transaction !== null ? null : models\DbMessage::getDb()->beginTransaction();
         $primaryKey = models\DbMessage::primaryKey();
-        $message_ids = models\DbMessage::find()
+        $tableName = models\DbMessage::tableName();
+        $message_ids = array_map(function ($row) use ($primaryKey) {
+            return array_intersect_key($row, array_flip($primaryKey));
+        }, models\DbMessage::find()
             ->withQueue($this->id)
             ->withSubscriber($subscriber_id)
-            ->select($primaryKey)
-            ->andWhere(['in', $primaryKey, $message_id])
+            ->select(array_map(function ($pk) use ($tableName) { return $tableName.'.'.$pk; }, array_merge($primaryKey, ['subscription_id'])))
+            ->andWhere(['in', $tableName.'.id', $message_id])
             ->asArray()
-            ->all();
+            ->all()
+        );
         $now = new \DateTime('now', new \DateTimezone('UTC'));
         models\DbMessage::updateAll([
             'status' => Message::DELETED,
@@ -237,14 +241,18 @@ class DbQueue extends Queue
     {
         $trx = models\DbMessage::getDb()->transaction !== null ? null : models\DbMessage::getDb()->beginTransaction();
         $primaryKey = models\DbMessage::primaryKey();
-        $message_ids = models\DbMessage::find()
+        $tableName = models\DbMessage::tableName();
+        $message_ids = array_map(function ($row) use ($primaryKey) {
+            return array_intersect_key($row, array_flip($primaryKey));
+        }, models\DbMessage::find()
             ->withQueue($this->id)
             ->withSubscriber($subscriber_id)
             ->reserved($this->timeout)
-            ->select($primaryKey)
-            ->andWhere(['in', $primaryKey, $message_id])
+            ->select(array_map(function ($pk) use ($tableName) { return $tableName.'.'.$pk; }, array_merge($primaryKey, ['subscription_id'])))
+            ->andWhere(['in', $tableName.'.id', $message_id])
             ->asArray()
-            ->all();
+            ->all()
+        );
         models\DbMessage::updateAll(['status' => Message::AVAILABLE], ['in', $primaryKey, $message_ids]);
         if ($trx !== null) {
             $trx->commit();

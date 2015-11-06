@@ -190,7 +190,7 @@ class QueueController extends \yii\web\Controller
             if ($message_id === null) {
                 $queue->receive($subscriber_id);
             } else {
-                $queue->delete($message_id);
+                $queue->delete($message_id, $subscriber_id);
             }
         }
         return $this->redirect($returnUrl !== null ? $returnUrl : Yii::$app->user->returnUrl);

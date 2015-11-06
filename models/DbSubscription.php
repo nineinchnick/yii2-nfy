@@ -50,7 +50,7 @@ class DbSubscription extends \yii\db\ActiveRecord
 
     public function getMessages()
     {
-        return $this->hasMany(DbMessage::className(), ['id' => 'subscription_id']);
+        return $this->hasMany(DbMessage::className(), ['subscription_id' => 'id']);
     }
 
     public function getSubscriber()
