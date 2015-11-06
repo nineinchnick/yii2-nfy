@@ -216,7 +216,8 @@ class DbQueue extends Queue
             ->withSubscriber($subscriber_id)
             ->select($primaryKey)
             ->andWhere(['in', $primaryKey, $message_id])
-            ->column();
+            ->asArray()
+            ->all();
         $now = new \DateTime('now', new \DateTimezone('UTC'));
         models\DbMessage::updateAll([
             'status' => Message::DELETED,
@@ -242,7 +243,8 @@ class DbQueue extends Queue
             ->reserved($this->timeout)
             ->select($primaryKey)
             ->andWhere(['in', $primaryKey, $message_id])
-            ->column();
+            ->asArray()
+            ->all();
         models\DbMessage::updateAll(['status' => Message::AVAILABLE], ['in', $primaryKey, $message_ids]);
         if ($trx !== null) {
             $trx->commit();
@@ -259,11 +261,12 @@ class DbQueue extends Queue
     {
         $trx = models\DbMessage::getDb()->transaction !== null ? null : models\DbMessage::getDb()->beginTransaction();
         $primaryKey = models\DbMessage::primaryKey();
-        $message_ids = models\DbMessage::find(
-        )->withQueue($this->id)
-        ->timedout($this->timeout)
-        ->select($primaryKey)
-        ->column();
+        $message_ids = models\DbMessage::find()
+            ->withQueue($this->id)
+            ->timedout($this->timeout)
+            ->select($primaryKey)
+            ->asArray()
+            ->all();
         models\DbMessage::updateAll(['status' => Message::AVAILABLE], ['in', $primaryKey, $message_ids]);
         if ($trx !== null) {
             $trx->commit();
@@ -422,7 +425,8 @@ class DbQueue extends Queue
             ->withQueue($this->id)
             ->deleted()
             ->select($primaryKey)
-            ->column();
+            ->asArray()
+            ->all();
         models\DbMessage::deleteAll(['in', $primaryKey, $message_ids]);
         if ($trx !== null) {
             $trx->commit();
