@@ -29,10 +29,21 @@ class QueueController extends \yii\web\Controller
     public function accessRules()
     {
         return [
-            ['allow', 'actions' => ['index'], 'users' => ['@'], 'roles' => ['nfy.queue.read']],
-            ['allow', 'actions' => ['messages', 'message', 'subscribe', 'unsubscribe'], 'users' => ['@']],
-            ['allow', 'actions' => ['poll'], 'users' => ['@']],
-            ['deny', 'users' => ['*']],
+            [
+                'allow',
+                'actions' => ['index'],
+                'users' => ['@'],
+                'roles' => ['nfy.queue.read'],
+            ],
+            [
+                'allow',
+                'actions' => ['messages', 'message', 'subscribe', 'unsubscribe', 'poll', 'mark'],
+                'users' => ['@'],
+            ],
+            [
+                'deny',
+                'users' => ['*'],
+            ],
         ];
     }
 

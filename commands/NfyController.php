@@ -26,17 +26,16 @@ class NfyController extends Controller
      */
     public function getTemplateAuthItems()
     {
-        $bizRule = 'return !isset($params["queue"]) || $params["queue"]->isSubscribed($params["userId"]);';
-
+        $rule = new \nineinchnick\nfy\components\SubscribedRule;
         return [
             ['name' => 'nfy.queue.read',              'bizRule' => null, 'child' => null],
-            ['name' => 'nfy.queue.read.subscribed',   'bizRule' => $bizRule, 'child' => 'nfy.queue.read'],
+            ['name' => 'nfy.queue.read.subscribed',   'bizRule' => $rule->name, 'child' => 'nfy.queue.read'],
             ['name' => 'nfy.queue.subscribe',         'bizRule' => null, 'child' => null],
             ['name' => 'nfy.queue.unsubscribe',       'bizRule' => null, 'child' => null],
             ['name' => 'nfy.message.read',              'bizRule' => null, 'child' => null],
             ['name' => 'nfy.message.create',            'bizRule' => null, 'child' => null],
-            ['name' => 'nfy.message.read.subscribed',   'bizRule' => $bizRule, 'child' => 'nfy.message.read'],
-            ['name' => 'nfy.message.create.subscribed', 'bizRule' => $bizRule, 'child' => 'nfy.message.create'],
+            ['name' => 'nfy.message.read.subscribed',   'bizRule' => $rule->name, 'child' => 'nfy.message.read'],
+            ['name' => 'nfy.message.create.subscribed', 'bizRule' => $rule->name, 'child' => 'nfy.message.create'],
         ];
     }
 
@@ -70,6 +69,12 @@ class NfyController extends Controller
             }
         }
         foreach ($newAuthItems as $template) {
+            if ($template['bizRule'] !== null) {
+                if (($rule = $auth->getrule($template['bizRule'])) === null) {
+                    $rule = new \nineinchnick\nfy\components\SubscribedRule;
+                    $auth->add($rule);
+                }
+            }
             $auth->createItem($template['name'], rbac\Item::TYPE_OPERATION, $descriptions[$template['name']], $template['bizRule']);
             if (isset($template['child']) && $template['child'] !== null) {
                 $auth->addItemChild($template['name'], $template['child']);

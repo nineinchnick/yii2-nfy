@@ -214,7 +214,6 @@ class DbQueue extends Queue
         $message_ids = models\DbMessage::find()
             ->withQueue($this->id)
             ->withSubscriber($subscriber_id)
-            ->reserved($this->timeout)
             ->select($primaryKey)
             ->andWhere(['in', $primaryKey, $message_id])
             ->column();
