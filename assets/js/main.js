@@ -39,49 +39,51 @@
 	notificationsPoller.wrapApi = function() {
 		// from: https://gist.github.com/jhthorsen/5813059
 		// added call to $.wnf when webkitNotification is not available
-		if(!window.Notification) {
-			if(window.webkitNotifications) {
-				window.Notification = function(title, args) {
-					var n = window.webkitNotifications.createNotification(args.iconUrl || '', title, args.body || '');
-					$.each(['onshow', 'onclose'], function(k, i) { if(args[k]) this[k] = args[k]; });
-					n.ondisplay = function() { if(this.onshow) this.onshow(); };
-					n.show();
-					return n;
-				};
-				window.Notification.permission = webkitNotifications.checkPermission() ? 'default' : 'granted';
-				window.Notification.requestPermission = function(cb) {
-					webkitNotifications.requestPermission(function() {
-						window.Notification.permission = webkitNotifications.checkPermission() ? 'denied' : 'granted';
-						cb(window.Notification.permission);
-					});
-				};
-				window.Notification.prototype.close = function() { if(this.onclose) this.onclose(); };
+		if(window.Notification) {
+            return;
+        }
 
-				// since requestPermission won't work when called from init lets display a fallback popup to ask for permission
-				$.wnf({notification: {
-					autoclose: true,
-					ntitle: 'Enable system notifications',
-					nbody: '<a href="#" onclick="return notificationsPoller.ask();">Enable system notifications</a>'
-				}});
-			} else {
-				window.Notification = function(title, args) {
-					var config = {
-						/*position: 'bottom-right',
-						autoclose: false,
-						expire: null,*/
-						notification: { ntitle: title, nbody: args.body, icon: args.iconUrl || '', tag: args.tag || '' }
-					};
-					if (args.onshow) config.onShowFn = args.onshow;
-					if (args.onclose) config.onCloseFn = args.onclose;
-					$.wnf( config );
-					return this;
-				};
-				window.Notification.permission = 'granted';
-				window.Notification.requestPermission = function(cb) { cb('granted'); };
-				window.Notification.prototype.close = function() { if(this.onclose) this.onclose(); };
-			}
-		}
-	};
+        if(window.webkitNotifications) {
+            window.Notification = function(title, args) {
+                var n = window.webkitNotifications.createNotification(args.iconUrl || '', title, args.body || '');
+                $.each(['onshow', 'onclose'], function(k, i) { if(args[k]) this[k] = args[k]; });
+                n.ondisplay = function() { if(this.onshow) this.onshow(); };
+                n.show();
+                return n;
+            };
+            window.Notification.permission = webkitNotifications.checkPermission() ? 'default' : 'granted';
+            window.Notification.requestPermission = function(cb) {
+                webkitNotifications.requestPermission(function() {
+                    window.Notification.permission = webkitNotifications.checkPermission() ? 'denied' : 'granted';
+                    cb(window.Notification.permission);
+                });
+            };
+            window.Notification.prototype.close = function() { if(this.onclose) this.onclose(); };
+
+            // since requestPermission won't work when called from init lets display a fallback popup to ask for permission
+            $.wnf({notification: {
+                autoclose: true,
+                ntitle: 'Enable system notifications',
+                nbody: '<a href="#" onclick="return notificationsPoller.ask();">Enable system notifications</a>'
+            }});
+            return;
+        }
+        window.Notification = function(title, args) {
+            var config = {
+                /*position: 'bottom-right',
+                autoclose: false,
+                expire: null,*/
+                notification: { ntitle: title, nbody: args.body, icon: args.iconUrl || '', tag: args.tag || '' }
+            };
+            if (args.onshow) config.onShowFn = args.onshow;
+            if (args.onclose) config.onCloseFn = args.onclose;
+            $.wnf( config );
+            return this;
+        };
+        window.Notification.permission = 'granted';
+        window.Notification.requestPermission = function(cb) { cb('granted'); };
+        window.Notification.prototype.close = function() { if(this.onclose) this.onclose(); };
+    };
 
 	notificationsPoller.init = function(settings) {
 		notificationsPoller.wrapApi();
@@ -89,24 +91,25 @@
 
 		_settings = $.extend({}, _defaultSettings, settings);
 
-		if (_settings.method === _method_poll) {
+		if (_settings.method === _method_poll || typeof WebSocket === 'undefined') {
             if('onopen' in _settings.websocket) {
                 _settings.websocket['onopen'](null)(null);
             }
 			notificationsPoller.poll();
-		} else {
-			_socket = new WebSocket(_settings.url);
-			for(var i in _settings.websocket) {
-				if (typeof _settings.websocket[i] === 'function') {
-					_socket[i] = _settings.websocket[i](_socket);
-				}
-			}
-			window.WEB_SOCKET_SWF_LOCATION = _settings.baseUrl + '/js/WebSocketMain'+(_settings.xDomain ? 'Insecure' : '')+'.swf';
+            return;
 		}
+
+        _socket = new WebSocket(_settings.url);
+        for(var i in _settings.websocket) {
+            if (typeof _settings.websocket[i] === 'function') {
+                _socket[i] = _settings.websocket[i](_socket);
+            }
+        }
+        window.WEB_SOCKET_SWF_LOCATION = _settings.baseUrl + '/js/WebSocketMain'+(_settings.xDomain ? 'Insecure' : '')+'.swf';
 	};
 
 	notificationsPoller.ask = function() {
-		if (!window.Notification.permission!=='granted') {
+		if (!window.Notification.permission !== 'granted') {
 			window.Notification.requestPermission(function(){
 				_ready = true;
 			});
