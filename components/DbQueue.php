@@ -299,9 +299,6 @@ class DbQueue extends Queue
             ]);
         } else {
             $subscription->is_deleted = 0;
-            models\DbSubscriptionCategory::deleteAll('subscription_id=:subscription_id', [
-                ':subscription_id' => $subscription->primaryKey,
-            ]);
         }
         if (!$subscription->save()) {
             throw new Exception(Yii::t('app', 'Failed to subscribe {subscriber_id} to {queue_label}', [

@@ -63,6 +63,7 @@ class MailQueue extends Queue
      */
     public function send($message, $category = null)
     {
+        $stringMessage = $message;
         if (!is_string($message)) {
             $stringMessage = print_r($message, true);
         }
@@ -183,7 +184,7 @@ class MailQueue extends Queue
      */
     public function isSubscribed($subscriber_id, $category = null)
     {
-        return $this->isSubscribed($subscriber_id, $category);
+        return $this->subscriptionQueue->isSubscribed($subscriber_id, $category);
     }
 
     /**
